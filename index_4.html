@@ -388,8 +388,115 @@ const getTierUnit=(bankroll,odds)=>{const t=getTier(odds);return bankroll*(TIERS
 function getTodayExposure(){const today=new Date().toISOString().slice(0,10);return S.bets.filter(b=>b.date===today).reduce((a,b)=>a+b.stake,0)}
 
 function toast(msg,type='success'){const el=document.getElementById('toast');el.textContent=msg;el.className='toast toast-'+type;el.style.display='block';setTimeout(()=>el.style.display='none',2500)}
-function saveState(){try{localStorage.setItem('betshark-v2',JSON.stringify(S))}catch(e){}updateSidebar()}
-function loadState(){try{const d=localStorage.getItem('betshark-v2');if(d){const p=JSON.parse(d);S={...S,...p};S.bets=S.bets||[];S.goals=S.goals||[];S.challenges=S.challenges||[];S.htftEntries=S.htftEntries||[];S.achievements=S.achievements||[];S.settings={defaultUnit:3,unitOptions:[1,3,5],currency:'€',...S.settings}}}catch(e){}}
+
+// ================================================================
+// SUPABASE CLIENT
+// ================================================================
+const SUPA_URL='https://rprwrpultedttveozbhr.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcndycHVsdGVkdHR2ZW96YmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNTc5MTMsImV4cCI6MjA4OTkzMzkxM30.ahsLiUybojBv1grK8_wCFsroXdxIRmvMee_WOHk75EI';
+const supa={
+  async fetch(path,opts={}){
+    const res=await fetch(SUPA_URL+'/rest/v1/'+path,{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':opts.prefer||'return=representation'},...opts});
+    if(!res.ok){console.error('Supabase error:',res.status,await res.text());return null}
+    const txt=await res.text();return txt?JSON.parse(txt):null;
+  },
+  async select(table,query=''){return this.fetch(table+(query?'?'+query:''))},
+  async insert(table,data){return this.fetch(table,{method:'POST',body:JSON.stringify(data)})},
+  async update(table,query,data){return this.fetch(table+'?'+query,{method:'PATCH',body:JSON.stringify(data)})},
+  async delete(table,query){return this.fetch(table+'?'+query,{method:'DELETE'})},
+  async upsert(table,data){return this.fetch(table,{method:'POST',body:JSON.stringify(data),prefer:'return=representation,resolution=merge-duplicates'})},
+};
+let profileId=null;
+
+// ================================================================
+// DATA SYNC (Supabase + localStorage cache)
+// ================================================================
+function saveLocal(){try{localStorage.setItem('betshark-v3',JSON.stringify(S))}catch(e){}}
+
+async function saveState(){
+  saveLocal();updateSidebar();
+  // Sync profile to Supabase
+  if(profileId){
+    await supa.update('profiles','id=eq.'+profileId,{bankroll:S.bankroll,initial_bankroll:S.initialBankroll,username:S.userName,settings:S.settings,total_xp:S.totalXP||0,achievements:S.achievements||[],updated_at:new Date().toISOString()});
+  }
+}
+
+async function saveBet(bet){
+  saveLocal();
+  if(profileId){
+    await supa.insert('bets',{profile_id:profileId,match:bet.match,bet:bet.bet,odds:bet.odds,stake:bet.stake,sport:bet.sport,competition:bet.competition,date:bet.date,notes:bet.notes,bet_type:bet.betType,bookmaker:bet.bookmaker,tier:bet.tier||getTier(bet.odds),unit_pct:bet.unitPct,status:bet.status,returns:bet.returns,legs:bet.legs||null,scanned:bet.scanned||false});
+  }
+}
+
+async function updateBet(localId,updates){
+  // Find the bet in local state, update it
+  const localBet=S.bets.find(b=>b.id===localId);
+  if(!localBet)return;
+  Object.assign(localBet,updates);
+  saveLocal();
+  // Sync to Supabase — find by match+date+odds combo (since local IDs differ)
+  if(profileId){
+    await supa.update('bets',`profile_id=eq.${profileId}&match=eq.${encodeURIComponent(localBet.match)}&date=eq.${localBet.date}&odds=eq.${localBet.odds}`,{status:localBet.status,returns:localBet.returns});
+  }
+}
+
+async function deleteBetDB(localId){
+  const localBet=S.bets.find(b=>b.id===localId);
+  if(profileId&&localBet){
+    await supa.delete('bets',`profile_id=eq.${profileId}&match=eq.${encodeURIComponent(localBet.match)}&date=eq.${localBet.date}&odds=eq.${localBet.odds}`);
+  }
+}
+
+async function saveHTFT(entry){
+  saveLocal();
+  if(profileId){
+    await supa.insert('htft_entries',{profile_id:profileId,team:entry.team,opponent:entry.opponent,competition:entry.competition,ht_result:entry.htResult,ft_result:entry.ftResult,ht_score:entry.htScore,ft_score:entry.ftScore,odds:entry.odds,notes:entry.notes,date:entry.date});
+  }
+}
+
+async function saveGoal(goal){
+  saveLocal();
+  if(profileId){
+    await supa.insert('goals',{profile_id:profileId,name:goal.name,type:goal.type,target:goal.target,deadline:goal.deadline||null});
+  }
+}
+
+async function saveChallenge(ch){
+  saveLocal();
+  if(profileId){
+    await supa.insert('challenges',{profile_id:profileId,name:ch.name,description:ch.description,target_amount:ch.targetAmount,start_balance:ch.startBalance,current_balance:ch.currentBalance,max_bets:ch.maxBets||null,deadline:ch.deadline||null,status:ch.status});
+  }
+}
+
+async function loadFromSupabase(username){
+  // Find or create profile
+  let profiles=await supa.select('profiles','username=eq.'+encodeURIComponent(username));
+  if(!profiles||profiles.length===0){
+    // Create new profile
+    const newP=await supa.insert('profiles',{username:username,bankroll:S.bankroll,initial_bankroll:S.initialBankroll,settings:S.settings});
+    if(newP&&newP[0])profileId=newP[0].id;
+    return; // No data to load
+  }
+  // Load existing profile
+  const p=profiles[0];profileId=p.id;
+  S.bankroll=parseFloat(p.bankroll);S.initialBankroll=parseFloat(p.initial_bankroll);S.userName=p.username;
+  S.settings=p.settings||S.settings;S.totalXP=p.total_xp||0;S.achievements=p.achievements||[];
+  // Load bets
+  const bets=await supa.select('bets','profile_id=eq.'+profileId+'&order=created_at.desc');
+  if(bets)S.bets=bets.map(b=>({id:b.id,match:b.match,bet:b.bet,odds:parseFloat(b.odds),stake:parseFloat(b.stake),sport:b.sport,competition:b.competition,date:b.date,notes:b.notes,betType:b.bet_type,bookmaker:b.bookmaker,tier:b.tier,unitPct:b.unit_pct?parseFloat(b.unit_pct):null,status:b.status,returns:parseFloat(b.returns),legs:b.legs,scanned:b.scanned,createdAt:b.created_at}));
+  // Load HT/FT
+  const htft=await supa.select('htft_entries','profile_id=eq.'+profileId);
+  if(htft)S.htftEntries=htft.map(e=>({id:e.id,team:e.team,opponent:e.opponent,competition:e.competition,htResult:e.ht_result,ftResult:e.ft_result,htScore:e.ht_score,ftScore:e.ft_score,odds:e.odds,notes:e.notes,date:e.date}));
+  // Load goals
+  const goals=await supa.select('goals','profile_id=eq.'+profileId);
+  if(goals)S.goals=goals.map(g=>({id:g.id,name:g.name,type:g.type,target:parseFloat(g.target),deadline:g.deadline}));
+  // Load challenges
+  const chs=await supa.select('challenges','profile_id=eq.'+profileId);
+  if(chs)S.challenges=chs.map(c=>({id:c.id,name:c.name,description:c.description,targetAmount:parseFloat(c.target_amount),startBalance:parseFloat(c.start_balance),currentBalance:parseFloat(c.current_balance),maxBets:c.max_bets,deadline:c.deadline,status:c.status}));
+  saveLocal();
+}
+
+function loadState(){try{const d=localStorage.getItem('betshark-v3');if(d){const p=JSON.parse(d);S={...S,...p};S.bets=S.bets||[];S.goals=S.goals||[];S.challenges=S.challenges||[];S.htftEntries=S.htftEntries||[];S.achievements=S.achievements||[];S.settings={defaultUnit:3,unitOptions:[1,3,5],currency:'€',...S.settings}}}catch(e){}}
 
 // ---- STATS ----
 function computeStats(){
@@ -648,17 +755,17 @@ function submitBet(){
   const isCombi=bf.betType==='Combi'||bf.betType==='System';
   if(isCombi){
     if(combiLegs.length<2){toast('Combo needs min. 2 selections','error');return}
-    const stake=bf.useCustom?(parseFloat(bf.customStake)||0):unitSize(bf.unitPct);if(stake<=0){toast('Stake moet > 0','error');return}
+    const stake=bf.useCustom?(parseFloat(bf.customStake)||0):unitSize(bf.unitPct);if(stake<=0){toast('Stake must be > 0','error');return}
     const combinedOdds=combiOdds();
     const matchStr=combiLegs.map(l=>l.match).join(' + ');
     const betStr=combiLegs.map(l=>l.bet).join(' / ');
-    S.bets.push({id:uid(),match:matchStr,bet:betStr,odds:combinedOdds,stake,sport:combiLegs[0].sport,competition:'',date:bf.date,notes:bf.notes,betType:bf.betType,bookmaker:bf.bookmaker,unitPct:bf.useCustom?null:bf.unitPct,status:'pending',returns:0,createdAt:new Date().toISOString(),legs:combiLegs.map(l=>({...l}))});
-    saveState();toast(`${bf.betType}: ${combiLegs.length} legs @${combinedOdds.toFixed(2)}`);combiLegs=[];
+    const newBet={id:uid(),match:matchStr,bet:betStr,odds:combinedOdds,stake,sport:combiLegs[0].sport,competition:'',date:bf.date,notes:bf.notes,betType:bf.betType,bookmaker:bf.bookmaker,unitPct:bf.useCustom?null:bf.unitPct,status:'pending',returns:0,createdAt:new Date().toISOString(),legs:combiLegs.map(l=>({...l}))};
+    S.bets.push(newBet);saveState();saveBet(newBet);toast(`${bf.betType}: ${combiLegs.length} legs @${combinedOdds.toFixed(2)}`);combiLegs=[];
   } else {
     if(!bf.match||!bf.bet||!bf.odds){toast('Fill in all fields','error');return}
-    const stake=bf.useCustom?(parseFloat(bf.customStake)||0):unitSize(bf.unitPct);if(stake<=0){toast('Stake moet > 0','error');return}
-    S.bets.push({id:uid(),match:bf.match,bet:bf.bet,odds:parseFloat(bf.odds),stake,sport:bf.sport,competition:bf.competition,date:bf.date,notes:bf.notes,betType:bf.betType,bookmaker:bf.bookmaker,unitPct:bf.useCustom?null:bf.unitPct,status:'pending',returns:0,createdAt:new Date().toISOString()});
-    saveState();toast(`Bet: ${bf.match}`);
+    const stake=bf.useCustom?(parseFloat(bf.customStake)||0):unitSize(bf.unitPct);if(stake<=0){toast('Stake must be > 0','error');return}
+    const newBet={id:uid(),match:bf.match,bet:bf.bet,odds:parseFloat(bf.odds),stake,sport:bf.sport,competition:bf.competition,date:bf.date,notes:bf.notes,betType:bf.betType,bookmaker:bf.bookmaker,tier:getTier(parseFloat(bf.odds)),unitPct:bf.useCustom?null:bf.unitPct,status:'pending',returns:0,createdAt:new Date().toISOString()};
+    S.bets.push(newBet);saveState();saveBet(newBet);toast(`Bet: ${bf.match}`);
   }
   bf={match:'',bet:'',odds:'',sport:'Football',unitPct:S.settings.defaultUnit,customStake:'',useCustom:false,competition:'',date:new Date().toISOString().slice(0,10),notes:'',betType:bf.betType,bookmaker:bf.bookmaker};renderNieuweBet()
 }
@@ -732,7 +839,7 @@ function handleSlipUpload(event){
 function addScannedBet(){
   const m=document.getElementById('scan-match').value,b=document.getElementById('scan-bet').value,o=parseFloat(document.getElementById('scan-odds').value),st=parseFloat(document.getElementById('scan-stake').value);
   if(!m||!b||!o||!st){toast('Fill in all fields','error');return}
-  S.bets.push({id:uid(),match:m,bet:b,odds:o,stake:st,sport:'Football',competition:'',date:new Date().toISOString().slice(0,10),notes:'Via Slip Scanner',betType:'Single',bookmaker:'',unitPct:null,status:'pending',returns:0,createdAt:new Date().toISOString(),scanned:true});
+  const scBet={id:uid(),match:m,bet:b,odds:o,stake:st,sport:'Football',competition:'',date:new Date().toISOString().slice(0,10),notes:'Via Slip Scanner',betType:'Single',bookmaker:'',unitPct:null,status:'pending',returns:0,createdAt:new Date().toISOString(),scanned:true};S.bets.push(scBet);saveBet(scBet);
   saveState();toast('Scanned bet added! 📸');document.getElementById('scanner-result').innerHTML='';renderScanner()}
 
 // ================================================================
@@ -770,8 +877,8 @@ function renderBets(){
       </div>
       ${b.status==='pending'?`<div style="display:flex;gap:5px;margin-top:-4px;margin-bottom:8px;padding-left:18px"><button class="btn btn-primary btn-xs" onclick="settleBet('${b.id}','won')">✅ Won</button><button class="btn btn-danger btn-xs" onclick="settleBet('${b.id}','lost')">❌ Lost</button><button class="btn btn-secondary btn-xs" onclick="settleBet('${b.id}','push')">↩️ Push</button><button class="btn btn-secondary btn-xs" onclick="settleBet('${b.id}','half_won')">½W</button><div style="flex:1"></div><button class="btn btn-ghost btn-xs" onclick="deleteBet('${b.id}')">🗑</button></div>`:`<div style="display:flex;gap:5px;margin-top:-4px;margin-bottom:8px;padding-left:18px"><button class="btn btn-ghost btn-xs" onclick="deleteBet('${b.id}')">Delete</button></div>`}`}).join('')}`;
 }
-function settleBet(id,status){const b=S.bets.find(x=>x.id===id);if(!b)return;b.returns=status==='won'?b.stake*b.odds:status==='half_won'?b.stake*((b.odds-1)/2+1):status==='push'?b.stake:0;b.status=status;S.bankroll+=(b.returns-b.stake);saveState();toast(status==='won'?`Won! +${fmt(b.returns-b.stake)}`:'Settled');renderBets()}
-function deleteBet(id){const b=S.bets.find(x=>x.id===id);if(!b)return;if(b.status!=='pending')S.bankroll-=((b.returns||0)-b.stake);S.bets=S.bets.filter(x=>x.id!==id);saveState();toast('Deleted','error');renderBets()}
+function settleBet(id,status){const b=S.bets.find(x=>x.id===id);if(!b)return;b.returns=status==='won'?b.stake*b.odds:status==='half_won'?b.stake*((b.odds-1)/2+1):status==='push'?b.stake:0;b.status=status;S.bankroll+=(b.returns-b.stake);saveState();updateBet(id,{status:b.status,returns:b.returns});toast(status==='won'?`Won! +${fmt(b.returns-b.stake)}`:'Settled');renderBets()}
+function deleteBet(id){const b=S.bets.find(x=>x.id===id);if(!b)return;if(b.status!=='pending')S.bankroll-=((b.returns||0)-b.stake);deleteBetDB(id);S.bets=S.bets.filter(x=>x.id!==id);saveState();toast('Deleted','error');renderBets()}
 
 // ================================================================
 // ANALYTICS
@@ -883,7 +990,7 @@ function renderHTFT(){
       ${fe.slice(0,40).map(e=>{const isR=(e.htResult==='1'&&e.ftResult==='2')||(e.htResult==='2'&&e.ftResult==='1');return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:var(--radius-sm);background:${isR?'rgba(255,51,85,0.02)':'rgba(255,255,255,0.01)'};border:1px solid ${isR?'rgba(255,51,85,0.06)':'rgba(255,255,255,0.025)'};margin-bottom:5px"><div><span style="font-weight:600;font-size:13px">${esc(e.team)}</span>${e.opponent?` <span style="color:var(--text3);font-size:11px">vs ${esc(e.opponent)}</span>`:''}<span style="font-size:11px;color:var(--text3);margin-left:6px">${esc(e.competition)}</span></div><div style="display:flex;align-items:center;gap:8px"><span class="pattern-pill ${isR?'reversal':'normal'}">HT:${e.htResult}/FT:${e.ftResult}</span>${e.htScore?`<span style="font-size:11px;color:var(--text3);font-family:var(--mono)">${esc(e.htScore)}→${esc(e.ftScore)}</span>`:''}${e.odds?`<span style="font-size:11px;color:var(--yellow)">@${parseFloat(e.odds).toFixed(2)}</span>`:''}<span style="font-size:10px;color:var(--text4)">${fmtDateShort(e.date)}</span><button class="btn btn-ghost btn-xs" onclick="S.htftEntries=S.htftEntries.filter(x=>x.id!=='${e.id}');saveState();renderHTFT()">×</button></div></div>`}).join('')}
     </div>`;
 }
-function addHF(){if(!hf.team){toast('Enter team name','error');return}S.htftEntries.push({...hf,id:uid(),createdAt:new Date().toISOString()});saveState();toast('Entry added');hf={...hf,team:'',opponent:'',htScore:'',ftScore:'',odds:'',notes:''};renderHTFT()}
+function addHF(){if(!hf.team){toast('Enter team name','error');return}const htEntry={...hf,id:uid(),createdAt:new Date().toISOString()};S.htftEntries.push(htEntry);saveState();saveHTFT(htEntry);toast('Entry added');hf={...hf,team:'',opponent:'',htScore:'',ftScore:'',odds:'',notes:''};renderHTFT()}
 
 // ================================================================
 // DOELEN
@@ -903,7 +1010,7 @@ function renderDoelen(){
     <div class="grid-2">${(S.goals||[]).map(g=>{const p=calcGoalProgress(g);const done=p>=100;return`<div class="card" style="border-color:${done?'rgba(0,255,163,0.2)':'var(--border)'}"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:15px;font-weight:700">${done?'🏆 ':''}${esc(g.name)}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${g.type==='profit'?fmt(g.target)+' profit':g.type==='bankroll'?fmt(g.target)+' bankroll':g.type==='profitreak'?g.target+' streak':g.target+' bets'}${g.deadline?' • '+fmtDate(g.deadline):''}</div></div><div style="display:flex;align-items:center;gap:10px"><div style="position:relative;display:flex;align-items:center;justify-content:center">${ringSVG(p,48,4,done?'var(--green)':'var(--blue)')}<div style="position:absolute;font-size:11px;font-weight:700;font-family:var(--mono);color:${done?'var(--green)':'var(--blue)'}">${p.toFixed(0)}%</div></div><button class="btn btn-ghost btn-xs" onclick="S.goals=S.goals.filter(x=>x.id!=='${g.id}');saveState();renderDoelen()">×</button></div></div></div>`}).join('')}</div>
     ${!(S.goals||[]).length?'<div class="card empty"><div class="empty-icon">🎯</div>Set your first goal</div>':''}`;
 }
-function addGoal(){if(!gf.name||!gf.target){toast('Enter name and target','error');return}S.goals.push({id:uid(),name:gf.name,type:gf.type,target:parseFloat(gf.target),deadline:gf.deadline,createdAt:new Date().toISOString()});saveState();toast('Goal added!');gf={name:'',target:'',type:'profit',deadline:''};renderDoelen()}
+function addGoal(){if(!gf.name||!gf.target){toast('Enter name and target','error');return}const newGoal={id:uid(),name:gf.name,type:gf.type,target:parseFloat(gf.target),deadline:gf.deadline,createdAt:new Date().toISOString()};S.goals.push(newGoal);saveState();saveGoal(newGoal);toast('Goal added!');gf={name:'',target:'',type:'profit',deadline:''};renderDoelen()}
 
 // ================================================================
 // CHALLENGES
@@ -1092,7 +1199,7 @@ function loadDemoData(){
 // ================================================================
 // LOGIN HANDLING
 // ================================================================
-function handleLogin(){
+async function handleLogin(){
   const name=document.getElementById('login-name').value.trim();
   const br=parseFloat(document.getElementById('login-bankroll').value);
   if(!name){toast('Enter a name','error');return}
@@ -1101,12 +1208,17 @@ function handleLogin(){
   S.bankroll=br;
   S.initialBankroll=br;
   S.startDate=new Date().toISOString().slice(0,10);
+  // Try to load from Supabase (might be returning user)
+  try{await loadFromSupabase(name)}catch(e){console.log('Supabase offline, using local',e)}
   saveState();
   showApp();
 }
-function handleLoginExisting(){
+async function handleLoginExisting(){
   loadState();
-  if(S.bets.length>0||S.userName){
+  if(S.userName){
+    try{await loadFromSupabase(S.userName)}catch(e){}
+    showApp();
+  } else if(S.bets.length>0){
     showApp();
   } else {
     toast('No saved data found','error');
@@ -1146,7 +1258,8 @@ function showApp(){
 loadState();
 // Check if returning user
 if(S.userName || S.bets.length>0){
-  showApp();
+  // Try to sync from Supabase
+  (async()=>{try{await loadFromSupabase(S.userName);saveLocal()}catch(e){console.log('Offline mode')}showApp()})();
 } else {
   // Show login screen (it's visible by default)
   document.getElementById('login-name').focus();
