@@ -30,34 +30,6 @@
   --radius: 14px;
   --radius-sm: 10px;
 }
-
-/* Light theme */
-[data-theme="light"] {
-  --bg: #faf9f7; --bg2: #f0eeeb; --bg3: #e8e6e2;
-  --card: rgba(0,0,0,0.028); --card-h: rgba(0,0,0,0.05);
-  --border: rgba(0,0,0,0.08); --border-h: rgba(0,0,0,0.14);
-  --text: #1a1d23; --text2: rgba(0,0,0,0.55); --text3: rgba(0,0,0,0.35); --text4: rgba(0,0,0,0.15);
-  --green: #059669; --green2: #047857; --blue: #0284c7; --red: #dc2626; --yellow: #d97706; --purple: #7c3aed;
-}
-[data-theme="light"] body{background:var(--bg);color:var(--text)}
-[data-theme="light"] body::before{opacity:0.008}
-[data-theme="light"] .glow-tl,[data-theme="light"] .glow-br{opacity:0}
-[data-theme="light"] .input,[data-theme="light"] .select{background:rgba(0,0,0,0.03);color:var(--text);border-color:var(--border)}
-[data-theme="light"] option{background:var(--bg2);color:var(--text)}
-[data-theme="light"] .btn-primary{background:linear-gradient(135deg,var(--green),var(--blue));color:#fff}
-[data-theme="light"] .btn-secondary{background:rgba(0,0,0,0.06);color:var(--text)}
-[data-theme="light"] .login-screen{background:var(--bg)}
-[data-theme="light"] .login-input{background:rgba(0,0,0,0.04);color:var(--text);border-color:var(--border)}
-[data-theme="light"] .login-input::placeholder{color:var(--text3)}
-[data-theme="light"] .login-btn{background:linear-gradient(135deg,var(--green),var(--blue));color:#fff}
-[data-theme="light"] .content-header{background:rgba(250,249,247,0.92)}
-[data-theme="light"] ::selection{background:rgba(5,150,105,0.2)}
-[data-theme="light"] ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.1)}
-[data-theme="light"] .toast-success{background:var(--green);color:#fff}
-[data-theme="light"] .sidebar{background:var(--bg2)}
-[data-theme="light"] .sidebar-balance{background:rgba(5,150,105,0.06);border-color:rgba(5,150,105,0.12)}
-[data-theme="light"] .nav-item.active{background:rgba(5,150,105,0.08);color:var(--green);border-color:rgba(5,150,105,0.15)}
-[data-theme="light"] .level-bar{background:rgba(124,58,237,0.06);border-color:rgba(124,58,237,0.12)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
 body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
@@ -249,7 +221,7 @@ textarea.input{font-family:var(--sans);resize:vertical;min-height:56px}
     <div class="login-logo">BETSHARK</div>
     <div class="login-sub">
       <strong>Track smarter. Win bigger.</strong><br>
-      The smartest bet tracker for serious winners.
+      The smartest free bet tracker for serious bettors.
     </div>
 
     <input class="login-input" type="text" id="login-name" placeholder="Your name or username" autofocus>
@@ -267,7 +239,7 @@ textarea.input{font-family:var(--sans);resize:vertical;min-height:56px}
     </div>
 
     <div class="login-footer">
-      No account needed &middot; Data stays on your device &middot; Cloud sync available
+      100% free • No account needed • Data stays on your device
     </div>
   </div>
 </div>
@@ -303,7 +275,6 @@ textarea.input{font-family:var(--sans);resize:vertical;min-height:56px}
     <div style="display:flex;align-items:center;gap:8px">
       <div style="font-size:12px;color:var(--text3)" id="header-date"></div>
       <div id="conn-status" style="display:flex;align-items:center;gap:4px;font-size:9px;padding:3px 8px;border-radius:6px;background:rgba(0,255,163,0.06);color:var(--green)"><span id="conn-dot" style="width:6px;height:6px;border-radius:50%;background:var(--green)"></span><span id="conn-text">Connected</span></div>
-      <button onclick="toggleTheme()" id="theme-toggle" style="width:30px;height:30px;border-radius:var(--radius-sm);background:var(--card);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text2)" title="Toggle theme">☀</button>
     </div>
   </div>
   <div class="content-body">
@@ -402,53 +373,6 @@ let S = {
   achievements:[], scannedSlips:0, totalXP:0,
 };
 let currentTab = 'dashboard';
-// Theme toggle
-function toggleTheme(){
-  const cur=document.documentElement.getAttribute('data-theme');
-  const next=cur==='light'?'dark':'light';
-  document.documentElement.setAttribute('data-theme',next);
-  localStorage.setItem('betshark-theme',next);
-  const btn=document.getElementById('theme-toggle');
-  if(btn)btn.textContent=next==='light'?'🌙':'☀';
-}
-(function(){const t=localStorage.getItem('betshark-theme');if(t){document.documentElement.setAttribute('data-theme',t);setTimeout(()=>{const b=document.getElementById('theme-toggle');if(b)b.textContent=t==='light'?'🌙':'☀'},0)}})();
-
-// Team database for auto-complete
-const LEAGUE_TEAMS={
-  'JPL':['Club Brugge','Anderlecht','Union SG','Genk','Antwerp','Gent','Standard','Mechelen','Cercle Brugge','Charleroi','Westerlo','OH Leuven','STVV','Kortrijk','RWDM','Beerschot','Dender'],
-  'Premier League':['Arsenal','Aston Villa','Bournemouth','Brentford','Brighton','Chelsea','Crystal Palace','Everton','Fulham','Ipswich','Leicester','Liverpool','Man City','Man United','Newcastle','Nottm Forest','Southampton','Tottenham','West Ham','Wolves'],
-  'La Liga':['Real Madrid','Barcelona','Atletico Madrid','Athletic Bilbao','Real Sociedad','Real Betis','Villarreal','Girona','Sevilla','Mallorca','Rayo Vallecano','Osasuna','Celta Vigo','Las Palmas','Getafe','Alaves','Valencia','Valladolid','Espanyol','Leganes'],
-  'Serie A':['Inter','AC Milan','Juventus','Napoli','Atalanta','Roma','Lazio','Fiorentina','Bologna','Torino','Monza','Udinese','Genoa','Cagliari','Empoli','Parma','Como','Verona','Lecce','Venezia'],
-  'Bundesliga':['Bayern','Leverkusen','Dortmund','RB Leipzig','Stuttgart','Frankfurt','Wolfsburg','Freiburg','Hoffenheim','Werder Bremen','Mainz','Augsburg','Gladbach','Union Berlin','Bochum','Heidenheim','St. Pauli','Holstein Kiel'],
-  'Ligue 1':['PSG','Marseille','Monaco','Lille','Lyon','Nice','Lens','Rennes','Strasbourg','Toulouse','Nantes','Montpellier','Brest','Reims','Clermont','Lorient','Metz','Le Havre','Auxerre','Angers'],
-  'Eredivisie':['PSV','Ajax','Feyenoord','AZ','Twente','Utrecht','Go Ahead Eagles','Heerenveen','Sparta Rotterdam','Almere City','NEC','Vitesse','RKC','Fortuna Sittard','PEC Zwolle','Excelsior','Volendam','Heracles'],
-  'UCL':['Real Madrid','Man City','Bayern','Inter','Barcelona','Arsenal','Dortmund','PSG','Atletico Madrid','Benfica','Porto','Napoli','AC Milan','Juventus','Chelsea','Liverpool'],
-  'Europa League':['Liverpool','Roma','Atalanta','Leverkusen','Marseille','West Ham','Brighton','Rangers','Ajax','Feyenoord','Sporting','Villarreal','Real Sociedad','Betis','Slavia Praha','Toulouse'],
-  'WK':['Belgium','France','England','Germany','Spain','Brazil','Argentina','Netherlands','Portugal','Italy','USA','Croatia','Uruguay','Denmark','Japan','South Korea','Mexico','Morocco','Senegal','Australia'],
-  'ATP':['Djokovic','Sinner','Alcaraz','Medvedev','Rublev','Zverev','Tsitsipas','Fritz','Ruud','De Minaur'],
-  'WTA':['Swiatek','Sabalenka','Gauff','Rybakina','Pegula','Sakkari','Keys','Ostapenko'],
-  'NBA':['Lakers','Celtics','Warriors','Bucks','76ers','Nuggets','Heat','Suns','Knicks','Mavericks','Thunder','Timberwolves','Kings','Pacers','Cavaliers','Clippers'],
-  'NFL':['Chiefs','49ers','Eagles','Bills','Cowboys','Lions','Ravens','Dolphins','Packers','Bengals','Texans','Jets'],
-};
-function teamSuggest(inputId,comp){
-  const inp=document.getElementById(inputId);if(!inp)return;
-  const teams=LEAGUE_TEAMS[comp]||[];if(!teams.length)return;
-  // Remove old listener
-  inp._tsHandler&&inp.removeEventListener('input',inp._tsHandler);
-  inp._tsHandler=function(){
-    let dd=document.getElementById(inputId+'-dd');
-    if(!dd){dd=document.createElement('div');dd.id=inputId+'-dd';dd.style.cssText='position:absolute;z-index:100;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);max-height:160px;overflow-y:auto;width:100%;box-shadow:0 8px 24px rgba(0,0,0,0.3);top:100%;left:0';inp.parentElement.style.position='relative';inp.parentElement.appendChild(dd)}
-    const v=inp.value.toLowerCase();
-    const f=v?teams.filter(t=>t.toLowerCase().includes(v)):teams;
-    if(!f.length){dd.style.display='none';return}
-    dd.innerHTML=f.map(t=>`<div style="padding:6px 12px;cursor:pointer;font-size:12px;color:var(--text);transition:background 0.1s" onmouseenter="this.style.background='rgba(0,255,163,0.06)'" onmouseleave="this.style.background=''" onmousedown="event.preventDefault();this.parentElement.previousElementSibling?this.parentElement.previousElementSibling:document.getElementById('${inputId}');document.getElementById('${inputId}').value='${t}';document.getElementById('${inputId}').dispatchEvent(new Event('input'));this.parentElement.style.display='none'">${t}</div>`).join('');
-    dd.style.display='block';
-  };
-  inp.addEventListener('input',inp._tsHandler);
-  inp.addEventListener('focus',inp._tsHandler);
-  inp.addEventListener('blur',()=>setTimeout(()=>{const dd=document.getElementById(inputId+'-dd');if(dd)dd.style.display='none'},200));
-}
-
 
 // ---- HELPERS ----
 const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36);
@@ -687,10 +611,9 @@ function renderDashboard(){
   document.getElementById('tab-dashboard').innerHTML=`
     <div class="stats-grid fade-in">
       <div class="stat-card"><div class="stat-label">PROFIT / LOSS</div><div class="stat-value" style="color:${pc}">${fmt(s.profit)}</div><div class="stat-sub">ROI: ${s.roi.toFixed(1)}% • Staked: ${fmt(s.totalStaked)}</div></div>
-      <div class="stat-card"><div class="stat-label">WIN RATE</div><div class="stat-value" style="color:var(--blue)">${s.winRate.toFixed(1)}%</div><div class="stat-sub">${s.won.length}W / ${s.lost.length}L of ${s.settled.length} settled</div></div>
+      <div class="stat-card"><div class="stat-label">WIN RATE</div><div class="stat-value" style="color:var(--blue)">${s.winRate.toFixed(1)}%</div><div class="stat-sub">${s.won.length}W / ${s.lost.length}L van ${s.settled.length} settled</div></div>
       <div class="stat-card"><div class="stat-label">BANKROLL</div><div class="stat-value">${fmt(S.bankroll)}</div><div class="stat-sub">Start: ${fmt(S.initialBankroll)} • ${((S.bankroll/S.initialBankroll-1)*100).toFixed(1)}% growth</div></div>
       <div class="stat-card"><div class="stat-label">STREAK</div><div class="stat-value" style="color:var(--yellow)">${s.curStreak}W</div><div class="stat-sub">Record: ${s.maxStreak}W • Max loss: ${s.maxLoss}L</div></div>
-      ${(()=>{const avgSt=s.settled.length>0?s.totalStaked/s.settled.length:0;const pExp=s.pending.reduce((a,b)=>a+b.stake,0);const pPot=s.pending.reduce((a,b)=>a+b.stake*b.odds,0);const tm=s.settled.filter(b=>{const d=new Date(b.date),n=new Date();return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear()});const mp=tm.reduce((a,b)=>a+(b.returns||0)-b.stake,0);return`<div class="stat-card"><div class="stat-label">THIS MONTH</div><div class="stat-value" style="color:${mp>=0?'var(--green)':'var(--red)'}">${mp>=0?'+':''}${fmt(mp)}</div><div class="stat-sub">${tm.length} bets • Avg: ${fmt(avgSt)}</div></div><div class="stat-card"><div class="stat-label">OPEN EXPOSURE</div><div class="stat-value">${fmt(pExp)}</div><div class="stat-sub">${s.pending.length} pending • Pot: ${fmt(pPot)}</div></div>`})()}
     </div>
 
     <!-- Gauges row (CoinMarketMan inspired) -->
@@ -727,7 +650,7 @@ function renderDashboard(){
     <!-- Insights -->
     ${insights.length?`
     <div class="card fade-in" style="margin-bottom:24px">
-      <div class="card-title">INSIGHTS & ALERTS</div>
+      <div class="card-title">INSIGHTS INZICHTEN & ALERTS ALERTS</div>
       <div style="display:flex;flex-direction:column;gap:6px">
         ${insights.map(i=>{const colors={hot:'var(--green)',cold:'var(--blue)',info:'var(--text2)',warn:'var(--yellow)',alert:'var(--red)'};const icons={hot:'▲',cold:'▼',info:'●',warn:'⚠',alert:'!'};return`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:${colors[i.type]}08;border-radius:var(--radius-sm);border-left:3px solid ${colors[i.type]}"><span style="color:${colors[i.type]};font-weight:800;font-size:14px">${icons[i.type]}</span><span style="font-size:13px;color:var(--text)">${i.text}</span></div>`}).join('')}
       </div>
@@ -739,25 +662,33 @@ function renderDashboard(){
 }
 
 // ================================================================
-// NIEUWE BET
+// NEW BET — Unified form for all bet types
 // ================================================================
 let bf={match:'',bet:'',odds:'',sport:'Football',unitPct:3,customStake:'',useCustom:false,competition:'',date:new Date().toISOString().slice(0,10),notes:'',betType:'Single',bookmaker:'Napoleon Games'};
 let combiLegs=[];
 const QUICK_COMPS=['JPL','UCL','Europa League','Premier League','La Liga','Serie A','Bundesliga','Ligue 1','Eredivisie','WK','ATP','WTA','NBA','NFL'];
 const QUICK_BETS=['Over 2.5','Under 2.5','Home Win','Away Win','Draw','BTTS Yes','BTTS No','DC 1X','DC X2','HT/FT','Handicap -1','Corners Over','Exact Score','Anytime Scorer','1st Half Over','Both Teams Score'];
 const BOOKMAKERS=['Napoleon Games','Unibet','bet365','Betway','Ladbrokes','Bwin','888sport','Betclic','Circus','Bingoal','Other'];
+const LEAGUE_TEAMS={
+  'JPL':['Club Brugge','Anderlecht','Union SG','Genk','Antwerp','Gent','Standard','Mechelen','Cercle Brugge','Charleroi','Westerlo','OH Leuven','STVV','Kortrijk','RWDM','Beerschot','Dender'],
+  'Premier League':['Arsenal','Aston Villa','Bournemouth','Brentford','Brighton','Chelsea','Crystal Palace','Everton','Fulham','Ipswich','Leicester','Liverpool','Man City','Man United','Newcastle','Nottm Forest','Southampton','Tottenham','West Ham','Wolves'],
+  'La Liga':['Real Madrid','Barcelona','Atletico Madrid','Athletic Bilbao','Real Sociedad','Real Betis','Villarreal','Girona','Sevilla','Mallorca','Rayo Vallecano','Osasuna','Celta Vigo','Las Palmas','Getafe','Alaves','Valencia','Valladolid','Espanyol','Leganes'],
+  'Serie A':['Inter','AC Milan','Juventus','Napoli','Atalanta','Roma','Lazio','Fiorentina','Bologna','Torino','Monza','Udinese','Genoa','Cagliari','Empoli','Parma','Como','Verona','Lecce','Venezia'],
+  'Bundesliga':['Bayern','Leverkusen','Dortmund','RB Leipzig','Stuttgart','Frankfurt','Wolfsburg','Freiburg','Hoffenheim','Werder Bremen','Mainz','Augsburg','Gladbach','Union Berlin','Bochum','Heidenheim','St. Pauli','Holstein Kiel'],
+  'Ligue 1':['PSG','Marseille','Monaco','Lille','Lyon','Nice','Lens','Rennes','Strasbourg','Toulouse','Nantes','Montpellier','Brest','Reims','Clermont','Lorient','Metz','Le Havre','Auxerre','Angers'],
+  'Eredivisie':['PSV','Ajax','Feyenoord','AZ','Twente','Utrecht','Go Ahead Eagles','Heerenveen','Sparta Rotterdam','Almere City','NEC','Vitesse','RKC','Fortuna Sittard','PEC Zwolle','Excelsior','Volendam','Heracles'],
+  'UCL':['Real Madrid','Man City','Bayern','Inter','Barcelona','Arsenal','Dortmund','PSG','Atletico Madrid','Benfica','Porto','Napoli','AC Milan','Juventus','Chelsea','Liverpool'],
+  'Europa League':['Liverpool','Roma','Atalanta','Leverkusen','Marseille','West Ham','Brighton','Rangers','Ajax','Feyenoord','Sporting','Villarreal'],
+  'WK':['Belgium','France','England','Germany','Spain','Brazil','Argentina','Netherlands','Portugal','Italy','USA','Croatia'],
+  'ATP':['Djokovic','Sinner','Alcaraz','Medvedev','Rublev','Zverev','Tsitsipas','Fritz'],
+  'WTA':['Swiatek','Sabalenka','Gauff','Rybakina','Pegula','Sakkari','Keys'],
+  'NBA':['Lakers','Celtics','Warriors','Bucks','76ers','Nuggets','Heat','Suns','Knicks','Mavericks','Thunder','Timberwolves'],
+  'NFL':['Chiefs','49ers','Eagles','Bills','Cowboys','Lions','Ravens','Dolphins','Packers','Bengals'],
+};
+
 function combiOdds(){return combiLegs.reduce((a,l)=>a*(l.odds||1),1)}
 
-// Update only stake display values without re-rendering the input
-function updateStakeValues(){
-  const isC=bf.betType==='Combi'||bf.betType==='System'||bf.betType==='Bet Builder';
-  const odds=isC?combiOdds():(parseFloat(bf.odds)||0);
-  if(odds<=0)return;
-  const tier=getTier(odds);const auto=Math.round(getTierUnit(S.bankroll,odds)*100)/100;
-  const stake=bf.useCustom?(parseFloat(bf.customStake)||0):auto;const pot=stake*odds;
-  const sv=document.getElementById('stake-value');if(sv)sv.textContent=fmt(stake);
-  const sp=document.getElementById('stake-potential');if(sp)sp.innerHTML=`@${odds.toFixed(2)} → <span style="color:var(--green);font-family:var(--mono);font-weight:700">${fmt(pot)}</span> (profit: ${fmt(pot-stake)})`;
-}
+// Stake preview — only updates the numbers section, not the custom input
 function updateStakePreview(){
   const el=document.getElementById('stake-preview');if(!el)return;
   const isC=bf.betType==='Combi'||bf.betType==='System'||bf.betType==='Bet Builder';
@@ -772,34 +703,124 @@ function updateStakePreview(){
         <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
           <button class="btn btn-xs ${!bf.useCustom?'btn-primary':'btn-ghost'}" onclick="bf.useCustom=false;updateStakePreview()">Auto (${TIERS[tier].pct}%)</button>
           <button class="btn btn-xs ${bf.useCustom?'btn-primary':'btn-ghost'}" onclick="bf.useCustom=true;updateStakePreview()">Custom</button>
-          ${bf.useCustom?`<input class="input" type="number" step="0.01" placeholder="Amount" value="${bf.customStake}" oninput="bf.customStake=this.value;updateStakeValues()" style="width:100px;padding:4px 8px;font-size:12px" id="custom-stake-input">`:''}
+          ${bf.useCustom?`<input class="input" type="number" step="0.01" placeholder="Amount" value="${bf.customStake}" oninput="bf.customStake=this.value;stakeCalc()" style="width:100px;padding:4px 8px;font-size:12px" id="cs-input">`:''}
         </div>
         <div style="font-size:10px;color:var(--text3)">STAKE: <span style="font-size:9px;padding:2px 7px;border-radius:5px;font-weight:700;font-family:var(--mono);background:${TIERS[tier].color}15;color:${TIERS[tier].color}">${TIERS[tier].label}</span></div>
-        <div style="font-family:var(--mono);font-size:22px;font-weight:800;color:${TIERS[tier].color};margin:4px 0">${fmt(stake)}</div>
-        <div id="stake-potential" style="font-size:10px;color:var(--text3)">@${odds.toFixed(2)} → <span style="color:var(--green);font-family:var(--mono);font-weight:700">${fmt(pot)}</span> (profit: ${fmt(pot-stake)})</div>
+        <div id="sc-amt" style="font-family:var(--mono);font-size:22px;font-weight:800;color:${TIERS[tier].color};margin:4px 0">${fmt(stake)}</div>
+        <div id="sc-pot" style="font-size:10px;color:var(--text3)">@${odds.toFixed(2)} → <span style="color:var(--green);font-family:var(--mono);font-weight:700">${fmt(pot)}</span> (profit: ${fmt(pot-stake)})</div>
         ${over?'<div style="font-size:10px;color:var(--red);font-weight:600;margin-top:3px">⚠ Exceeds 10% daily exposure!</div>':''}
       </div>
       <button class="btn btn-primary" onclick="submitBet()" style="padding:12px 28px;font-size:14px">Place Bet</button>
     </div>
   </div>`;
 }
+// Light update for custom stake typing (no re-render)
+function stakeCalc(){
+  const isC=bf.betType==='Combi'||bf.betType==='System'||bf.betType==='Bet Builder';
+  const odds=isC?combiOdds():(parseFloat(bf.odds)||0);
+  if(odds<=0)return;
+  const stake=parseFloat(bf.customStake)||0;const pot=stake*odds;
+  const a=document.getElementById('sc-amt'),p=document.getElementById('sc-pot');
+  if(a)a.textContent=fmt(stake);
+  if(p)p.innerHTML=`@${odds.toFixed(2)} → <span style="color:var(--green);font-family:var(--mono);font-weight:700">${fmt(pot)}</span> (profit: ${fmt(pot-stake)})`;
+}
+
+// Shared leg entry HTML — used for BOTH single bet form AND combi "add leg" area
+function legFormHTML(prefix, data){
+  return`
+  <div class="grid-2" style="gap:12px">
+    <div class="input-group"><label class="input-label">Competition</label>
+      <input class="input" id="${prefix}-comp" placeholder="Pick or type..." value="${esc(data.competition||'')}" oninput="if('${prefix}'==='bf')bf.competition=this.value" style="font-family:var(--sans)">
+      <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:5px">${QUICK_COMPS.map(c=>`<button class="btn btn-xs ${data.competition===c?'btn-primary':'btn-ghost'}" style="font-size:9px;padding:2px 6px" onclick="document.getElementById('${prefix}-comp').value='${c}';if('${prefix}'==='bf')bf.competition='${c}';autoSport('${prefix}','${c}')">${c}</button>`).join('')}</div>
+    </div>
+    <div class="input-group"><label class="input-label">Sport</label>
+      <div style="display:flex;flex-wrap:wrap;gap:3px">${SPORTS.slice(0,6).map(sp=>`<button class="btn btn-xs ${data.sport===sp?'btn-primary':'btn-ghost'}" style="font-size:9px;padding:2px 6px" id="${prefix}-sp-${sp}" onclick="if('${prefix}'==='bf')bf.sport='${sp}';document.querySelectorAll('[id^=${prefix}-sp-]').forEach(b=>b.className='btn btn-xs btn-ghost');this.className='btn btn-xs btn-primary'">${sp}</button>`).join('')}<select class="select" id="${prefix}-sport-sel" onchange="if('${prefix}'==='bf')bf.sport=this.value" style="width:auto;padding:2px 6px;font-size:9px;border-radius:7px">${SPORTS.slice(6).map(sp=>`<option ${data.sport===sp?'selected':''}>${sp}</option>`).join('')}</select></div>
+    </div>
+  </div>
+  <div class="input-group" style="margin-top:10px"><label class="input-label">Match</label>
+    <input class="input" id="${prefix}-match" placeholder="Liverpool vs Man City" value="${esc(data.match||'')}" oninput="if('${prefix}'==='bf')bf.match=this.value">
+  </div>
+  <div class="input-group" style="margin-top:10px"><label class="input-label">Bet / Selection</label>
+    <input class="input" id="${prefix}-bet" placeholder="Over 2.5, BTTS, Home Win..." value="${esc(data.bet||'')}" oninput="if('${prefix}'==='bf')bf.bet=this.value">
+    <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:5px">${QUICK_BETS.map(b=>`<button class="btn btn-xs ${data.bet===b?'btn-primary':'btn-ghost'}" style="font-size:9px;padding:2px 6px" onclick="document.getElementById('${prefix}-bet').value='${b}';if('${prefix}'==='bf')bf.bet='${b}'">${b}</button>`).join('')}</div>
+  </div>
+  <div class="input-group" style="margin-top:10px"><label class="input-label">Odds</label>
+    <input class="input" id="${prefix}-odds" type="number" step="0.01" min="1" placeholder="1.85" value="${data.odds||''}" oninput="if('${prefix}'==='bf'){bf.odds=this.value;updateStakePreview()}">
+  </div>`;
+}
+
+function autoSport(prefix,comp){
+  const map={'JPL':'Football','UCL':'Football','Europa League':'Football','Premier League':'Football','La Liga':'Football','Serie A':'Football','Bundesliga':'Football','Ligue 1':'Football','Eredivisie':'Football','WK':'Football','ATP':'Tennis','WTA':'Tennis','NBA':'Basketball','NFL':'Football'};
+  const sp=map[comp];if(!sp)return;
+  if(prefix==='bf')bf.sport=sp;
+  // Highlight the right sport button
+  document.querySelectorAll(`[id^=${prefix}-sp-]`).forEach(b=>b.className='btn btn-xs btn-ghost');
+  const btn=document.getElementById(`${prefix}-sp-${sp}`);if(btn)btn.className='btn btn-xs btn-primary';
+}
+
 function renderNieuweBet(){
   const isC=bf.betType==='Combi'||bf.betType==='System'||bf.betType==='Bet Builder';
   document.getElementById('tab-nieuwe-bet').innerHTML=`
     <div style="display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap">${['Single','Combi','System','Bet Builder','Live','Ante-Post'].map(s=>`<button class="btn btn-sm ${bf.betType===s?'btn-primary':'btn-secondary'}" onclick="bf.betType='${s}';if('${s}'!=='Combi'&&'${s}'!=='System'&&'${s}'!=='Bet Builder')combiLegs=[];renderNieuweBet()">${s}</button>`).join('')}</div>
-    ${isC?`<div class="card fade-in" style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-size:14px;font-weight:700">${esc(bf.betType)} Slip <span style="color:var(--text3);font-weight:400">(${combiLegs.length} leg${combiLegs.length!==1?'s':''})</span></div>${combiLegs.length>0?`<div style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--green)">@${combiOdds().toFixed(2)}</div>`:''}</div>${combiLegs.map((l,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(0,255,163,0.02);border:1px solid rgba(0,255,163,0.06);border-radius:var(--radius-sm);margin-bottom:6px"><div style="width:22px;height:22px;border-radius:50%;background:rgba(0,255,163,0.1);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800">${i+1}</div><div style="flex:1"><div style="font-size:13px;font-weight:600">${esc(l.match)}</div><div style="font-size:11px;color:var(--text2)">${esc(l.bet)}${l.competition?' · '+esc(l.competition):''}</div></div><div style="font-family:var(--mono);font-weight:700;font-size:14px">@${l.odds.toFixed(2)}</div><button class="btn btn-ghost btn-xs" onclick="combiLegs.splice(${i},1);renderNieuweBet()">×</button></div>`).join('')}<div style="padding:14px;background:rgba(255,255,255,0.015);border-radius:var(--radius-sm);border:1px dashed var(--border);margin-top:8px"><div style="font-size:10px;color:var(--text3);font-weight:700;margin-bottom:10px">+ ADD LEG</div><div class="grid-2" style="gap:10px"><div class="input-group"><label class="input-label">Competition</label><input class="input" id="cl-comp" placeholder="Pick or type..." style="font-family:var(--sans)" oninput="setTimeout(()=>teamSuggest('cl-match',this.value),100)"><div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:5px">${QUICK_COMPS.map(c2=>`<button class="btn btn-xs btn-ghost" style="font-size:9px;padding:2px 6px" onclick="document.getElementById('cl-comp').value='${c2}';teamSuggest('cl-match','${c2}')">${c2}</button>`).join('')}</div></div><div class="input-group"><label class="input-label">Sport</label><div style="display:flex;flex-wrap:wrap;gap:3px">${SPORTS.slice(0,6).map(sp=>`<button class="btn btn-xs btn-ghost" style="font-size:9px;padding:2px 6px" onclick="document.getElementById('cl-sport').value='${sp}';this.parentElement.querySelectorAll('.btn').forEach(b=>{b.className='btn btn-xs btn-ghost'});this.className='btn btn-xs btn-primary'">${sp}</button>`).join('')}<select class="select" id="cl-sport" style="width:auto;padding:2px 6px;font-size:9px;border-radius:7px">${SPORTS.slice(6).map(sp=>`<option>${sp}</option>`).join('')}</select></div></div></div><div class="input-group" style="margin-top:10px"><label class="input-label">Match</label><input class="input" placeholder="Liverpool vs Man City" id="cl-match"></div><div class="input-group" style="margin-top:10px"><label class="input-label">Bet / Selection</label><input class="input" id="cl-bet" placeholder="Over 2.5, BTTS, Home Win..."><div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:5px">${QUICK_BETS.map(b=>`<button class="btn btn-xs btn-ghost" style="font-size:9px;padding:2px 6px" onclick="document.getElementById('cl-bet').value='${b}'">${b}</button>`).join('')}</div></div><div class="input-group" style="margin-top:10px"><label class="input-label">Odds</label><input class="input" type="number" step="0.01" min="1" placeholder="1.85" id="cl-odds"></div><div style="margin-top:10px;text-align:right"><button class="btn btn-primary btn-sm" onclick="addCombiLeg()">+ Add Leg</button></div></div><div style="display:flex;gap:10px;margin-top:12px;align-items:center"><div class="input-group" style="flex:1"><label class="input-label">Bookmaker</label><select class="select" onchange="bf.bookmaker=this.value" style="font-family:var(--sans)">${BOOKMAKERS.map(b=>`<option ${bf.bookmaker===b?'selected':''}>${b}</option>`).join('')}</select></div><div class="input-group" style="flex:1"><label class="input-label">Date</label><input class="input" type="date" value="${bf.date}" oninput="bf.date=this.value"></div></div><div class="input-group" style="margin-top:10px"><label class="input-label">Notes</label><textarea class="input" rows="2" placeholder="Why this bet?" oninput="bf.notes=this.value">${esc(bf.notes)}</textarea></div></div>`:`<div class="card fade-in" style="margin-bottom:16px"><div class="grid-2" style="gap:14px"><div class="input-group"><label class="input-label">Match</label><input class="input" id="bf-match" placeholder="Liverpool vs Man City" value="${esc(bf.match)}" oninput="bf.match=this.value"></div><div class="input-group"><label class="input-label">Bet / Selection</label><input class="input" id="bf-bet" placeholder="Over 2.5, BTTS, Home Win..." value="${esc(bf.bet)}" oninput="bf.bet=this.value"><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${QUICK_BETS.map(b=>`<button class="btn btn-xs ${bf.bet===b?'btn-primary':'btn-ghost'}" style="font-size:10px;padding:3px 8px" onclick="bf.bet='${b}';document.getElementById('bf-bet').value='${b}'">${b}</button>`).join('')}</div></div><div class="input-group"><label class="input-label">Odds</label><input class="input" type="number" step="0.01" min="1" placeholder="1.85" value="${bf.odds}" oninput="bf.odds=this.value;updateStakePreview()"></div><div class="input-group"><label class="input-label">Sport</label><div style="display:flex;flex-wrap:wrap;gap:4px">${SPORTS.slice(0,8).map(s=>`<button class="btn btn-xs ${bf.sport===s?'btn-primary':'btn-ghost'}" style="font-size:10px;padding:3px 8px" onclick="bf.sport='${s}';this.parentElement.querySelectorAll('.btn').forEach(b=>{b.className='btn btn-xs btn-ghost'});this.className='btn btn-xs btn-primary'">${s}</button>`).join('')}<select class="select" onchange="bf.sport=this.value" style="width:auto;padding:3px 8px;font-size:10px;border-radius:7px">${SPORTS.slice(8).map(s=>`<option ${bf.sport===s?'selected':''}>${s}</option>`).join('')}</select></div></div><div class="input-group"><label class="input-label">Competition</label><input class="input" id="bf-comp" placeholder="Or pick below..." value="${esc(bf.competition)}" oninput="bf.competition=this.value;teamSuggest('bf-match',this.value)"><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${QUICK_COMPS.map(c=>`<button class="btn btn-xs ${bf.competition===c?'btn-primary':'btn-ghost'}" style="font-size:10px;padding:3px 8px" onclick="bf.competition='${c}';document.getElementById('bf-comp').value='${c}';teamSuggest('bf-match','${c}')">${c}</button>`).join('')}</div></div><div class="input-group"><label class="input-label">Bookmaker</label><select class="select" onchange="bf.bookmaker=this.value" style="font-family:var(--sans)">${BOOKMAKERS.map(b=>`<option ${bf.bookmaker===b?'selected':''}>${b}</option>`).join('')}</select></div><div class="input-group"><label class="input-label">Date</label><input class="input" type="date" value="${bf.date}" oninput="bf.date=this.value"></div></div><div class="input-group" style="margin-top:12px"><label class="input-label">Notes</label><textarea class="input" rows="2" placeholder="Why this bet? Edge?" oninput="bf.notes=this.value">${esc(bf.notes)}</textarea></div></div>`}
+
+    ${isC?`
+    <!-- COMBI/SYSTEM/BB: Show existing legs + add leg form -->
+    <div class="card fade-in" style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-size:14px;font-weight:700">${esc(bf.betType)} Slip <span style="color:var(--text3);font-weight:400">(${combiLegs.length} leg${combiLegs.length!==1?'s':''})</span></div>
+        ${combiLegs.length>0?`<div style="font-family:var(--mono);font-size:16px;font-weight:800;color:var(--green)">@${combiOdds().toFixed(2)}</div>`:''}
+      </div>
+      ${combiLegs.map((l,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(0,255,163,0.02);border:1px solid rgba(0,255,163,0.06);border-radius:var(--radius-sm);margin-bottom:6px">
+        <div style="width:22px;height:22px;border-radius:50%;background:rgba(0,255,163,0.1);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800">${i+1}</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:600">${esc(l.match)}</div><div style="font-size:11px;color:var(--text2)">${esc(l.bet)} · ${esc(l.competition||l.sport||'Football')}</div></div>
+        <div style="font-family:var(--mono);font-weight:700;font-size:14px">@${l.odds.toFixed(2)}</div>
+        <button class="btn btn-ghost btn-xs" onclick="combiLegs.splice(${i},1);renderNieuweBet()">×</button>
+      </div>`).join('')}
+
+      <!-- Add leg form: SAME fields as single bet -->
+      <div style="padding:14px;background:rgba(255,255,255,0.015);border-radius:var(--radius-sm);border:1px dashed var(--border);margin-top:8px">
+        <div style="font-size:11px;color:var(--text3);font-weight:700;margin-bottom:10px">+ ADD LEG #${combiLegs.length+1}</div>
+        ${legFormHTML('cl',{sport:'Football',match:'',bet:'',odds:'',competition:''})}
+        <div style="margin-top:12px;text-align:right"><button class="btn btn-primary btn-sm" onclick="addCombiLeg()">+ Add Leg</button></div>
+      </div>
+
+      <!-- Slip-level settings -->
+      <div style="display:flex;gap:10px;margin-top:14px">
+        <div class="input-group" style="flex:1"><label class="input-label">Bookmaker</label><select class="select" onchange="bf.bookmaker=this.value" style="font-family:var(--sans)">${BOOKMAKERS.map(b=>`<option ${bf.bookmaker===b?'selected':''}>${b}</option>`).join('')}</select></div>
+        <div class="input-group" style="flex:1"><label class="input-label">Date</label><input class="input" type="date" value="${bf.date}" oninput="bf.date=this.value"></div>
+      </div>
+      <div class="input-group" style="margin-top:10px"><label class="input-label">Notes</label><textarea class="input" rows="2" placeholder="Why this bet? Edge?" oninput="bf.notes=this.value">${esc(bf.notes)}</textarea></div>
+    </div>
+    `:`
+    <!-- SINGLE BET: Same fields layout -->
+    <div class="card fade-in" style="margin-bottom:16px">
+      ${legFormHTML('bf',bf)}
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <div class="input-group" style="flex:1"><label class="input-label">Bookmaker</label><select class="select" onchange="bf.bookmaker=this.value" style="font-family:var(--sans)">${BOOKMAKERS.map(b=>`<option ${bf.bookmaker===b?'selected':''}>${b}</option>`).join('')}</select></div>
+        <div class="input-group" style="flex:1"><label class="input-label">Date</label><input class="input" type="date" value="${bf.date}" oninput="bf.date=this.value"></div>
+      </div>
+      <div class="input-group" style="margin-top:10px"><label class="input-label">Notes</label><textarea class="input" rows="2" placeholder="Why this bet? Edge?" oninput="bf.notes=this.value">${esc(bf.notes)}</textarea></div>
+    </div>
+    `}
     <div id="stake-preview"></div>`;
-  setTimeout(()=>{updateStakePreview();if(bf.competition)teamSuggest('bf-match',bf.competition)},50);
+  setTimeout(updateStakePreview,50);
 }
+
 function addCombiLeg(){
-  const m=document.getElementById('cl-match')?.value||'',b=document.getElementById('cl-bet')?.value||'',o=parseFloat(document.getElementById('cl-odds')?.value),c=document.getElementById('cl-comp')?.value||'';
-  const spEl=document.getElementById('cl-sport');
-  const activeBtn=spEl?.parentElement?.querySelector('.btn-primary');
-  const sp=activeBtn?activeBtn.textContent:(spEl?.value||'Football');
+  const m=document.getElementById('cl-match')?.value||'';
+  const b=document.getElementById('cl-bet')?.value||'';
+  const o=parseFloat(document.getElementById('cl-odds')?.value);
+  const c=document.getElementById('cl-comp')?.value||'';
+  // Detect sport from active button
+  let sp='Football';
+  const activeBtn=document.querySelector('[id^=cl-sp-].btn-primary');
+  if(activeBtn)sp=activeBtn.textContent;
+  else{const sel=document.getElementById('cl-sport-sel');if(sel)sp=sel.value}
   if(!m||!b||!o){toast('Fill in match, selection and odds','error');return}
   combiLegs.push({match:m,bet:b,odds:o,competition:c,sport:sp});
   renderNieuweBet();
 }
+
 function submitBet(){
   const isC=bf.betType==='Combi'||bf.betType==='System'||bf.betType==='Bet Builder';
   if(isC){
@@ -808,7 +829,7 @@ function submitBet(){
     const autoStake=Math.round(getTierUnit(S.bankroll,odds)*100)/100;
     const stake=bf.useCustom?(parseFloat(bf.customStake)||0):autoStake;
     if(stake<=0){toast('Enter a stake amount','error');return}
-    const newBet={id:uid(),match:combiLegs.map(l=>l.match).join(' + '),bet:combiLegs.map(l=>l.bet).join(' / '),odds:Math.round(odds*100)/100,stake,sport:combiLegs[0].sport,competition:combiLegs[0].competition||'',date:bf.date,notes:bf.notes,betType:bf.betType,bookmaker:bf.bookmaker,tier:getTier(odds),unitPct:TIERS[getTier(odds)].pct,status:'pending',returns:0,createdAt:new Date().toISOString(),legs:combiLegs.map(l=>({...l}))};
+    const newBet={id:uid(),match:combiLegs.map(l=>l.match).join(' + '),bet:combiLegs.map(l=>l.bet).join(' / '),odds:Math.round(odds*100)/100,stake,sport:combiLegs[0].sport,competition:combiLegs.map(l=>l.competition).filter(Boolean).join(', ')||'Mixed',date:bf.date,notes:bf.notes,betType:bf.betType,bookmaker:bf.bookmaker,tier:getTier(odds),unitPct:TIERS[getTier(odds)].pct,status:'pending',returns:0,createdAt:new Date().toISOString(),legs:combiLegs.map(l=>({...l}))};
     S.bets.push(newBet);saveState();saveBet(newBet);toast(`${bf.betType}: ${combiLegs.length} legs @${odds.toFixed(2)}`);combiLegs=[];
   } else {
     if(!bf.match||!bf.bet||!bf.odds){toast('Fill in match, bet & odds','error');return}
@@ -874,13 +895,13 @@ function handleSlipUpload(event){
               In the full version, our AI automatically recognizes all bet data. For now, you can manually enter the data based on the photo:
             </div>
             <div class="grid-2" style="gap:10px">
-              <div class="input-group"><label class="input-label">Match</label><input class="input" id="scan-match" placeholder="From the photo..."></div>
+              <div class="input-group"><label class="input-label">Match</label><input class="input" id="scan-match" placeholder="Away de foto..."></div>
               <div class="input-group"><label class="input-label">Bet</label><input class="input" id="scan-bet" placeholder="Selection..."></div>
               <div class="input-group"><label class="input-label">Odds</label><input class="input" id="scan-odds" type="number" step="0.01" placeholder="Odds..."></div>
               <div class="input-group"><label class="input-label">Stake</label><input class="input" id="scan-stake" type="number" step="0.01" placeholder="Amount..."></div>
             </div>
             <div style="margin-top:12px;display:flex;gap:8px">
-              <button class="btn btn-primary" onclick="addScannedBet()">➕ Add to Tracker</button>
+              <button class="btn btn-primary" onclick="addScannedBet()">➕ Add aan Tracker</button>
               <button class="btn btn-ghost" onclick="document.getElementById('scanner-result').innerHTML=''">Cancel</button>
             </div>
           </div>
@@ -903,7 +924,7 @@ function renderBets(){
   const filtered=S.bets.filter(b=>betFilter==='all'||b.status===betFilter).filter(b=>!betSearch||b.match.toLowerCase().includes(betSearch.toLowerCase())||b.bet.toLowerCase().includes(betSearch.toLowerCase())).sort((a,b)=>new Date(b.date)-new Date(a.date));
   document.getElementById('tab-bets').innerHTML=`
     <div class="filter-row">
-      ${['all','pending','won','lost','push'].map(f=>{const cnt=f==='all'?S.bets.length:S.bets.filter(b=>b.status===f).length;return`<button class="filter-btn ${betFilter===f?'active':''}" onclick="betFilter='${f}';renderBets()">${f==='all'?'All':sl[f]}${cnt?' ('+cnt+')':''}</button>`}).join('')}
+      ${['all','pending','won','lost','push'].map(f=>`<button class="filter-btn ${betFilter===f?'active':''}" onclick="betFilter='${f}';renderBets()">${f==='all'?`Alle (${S.bets.length})`:sl[f]}</button>`).join('')}
       <div style="flex:1"></div>
       <input class="input" placeholder="Search..." value="${esc(betSearch)}" oninput="betSearch=this.value;renderBets()" style="width:170px;padding:6px 12px;font-size:11px">
     </div>
@@ -955,13 +976,7 @@ function renderAnalytics(){
         <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">${typeRows.length?typeRows.map(([type,d])=>{const wr=d.w+d.l>0?(d.w/(d.w+d.l)*100):0;return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(255,255,255,0.015);border-radius:var(--radius-sm)"><div><span style="font-weight:600;font-size:13px">${type}</span><span style="font-size:11px;color:var(--text3);margin-left:8px">${d.w}W/${d.l}L (${wr.toFixed(0)}%)</span></div><div style="font-family:var(--mono);font-weight:700;font-size:13px;color:${d.profit>=0?'var(--green)':'var(--red)'}">${d.profit>=0?'+':''}${fmt(d.profit)}</div></div>`}).join(''):'<div style="color:var(--text3);font-size:12px">No data</div>'}</div>
       </div>
     </div>
-    <div class="card fade-in"><div class="card-title">CUMULATIVE PROFIT</div>${sparkSVG(s.profitCurve,600,90,s.profit>=0?'var(--green)':'var(--red)')}</div>
-
-    <!-- Bookmaker breakdown -->
-    ${(()=>{const bb={};s.settled.forEach(b=>{const k=b.bookmaker||'Unknown';if(!bb[k])bb[k]={w:0,l:0,p:0,s:0};bb[k].s+=b.stake;bb[k].p+=(b.returns||0)-b.stake;b.status==='won'?bb[k].w++:bb[k].l++});const rows=Object.entries(bb).sort((a,b)=>b[1].p-a[1].p);return rows.length?`<div class="grid-2 fade-in"><div class="card"><div class="card-title">ROI by Bookmaker</div><div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">${rows.map(([k,d])=>{const roi=d.s>0?(d.p/d.s*100):0;return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(255,255,255,0.015);border-radius:var(--radius-sm)"><div><span style="font-weight:600;font-size:13px">${k}</span><span style="font-size:11px;color:var(--text3);margin-left:8px">${d.w}W/${d.l}L · ROI ${roi.toFixed(1)}%</span></div><div style="font-family:var(--mono);font-weight:700;font-size:13px;color:${d.p>=0?'var(--green)':'var(--red)'}">${d.p>=0?'+':''}${fmt(d.p)}</div></div>`}).join('')}</div></div><div class="card"><div class="card-title">Win Rate by Odds Range</div><div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">${[[1.01,1.5,'1.01-1.50'],[1.51,2,'1.51-2.00'],[2.01,3,'2.01-3.00'],[3.01,5,'3.01-5.00'],[5.01,999,'5.01+']].map(([mn,mx,lbl])=>{const b2=s.settled.filter(b=>b.odds>=mn&&b.odds<=mx);if(!b2.length)return'';const w=b2.filter(b=>b.status==='won').length,l=b2.length-w;const p=b2.reduce((a,b)=>a+(b.returns||0)-b.stake,0);const wr=b2.length?(w/b2.length*100):0;return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(255,255,255,0.015);border-radius:var(--radius-sm)"><div><span style="font-weight:600;font-size:13px;font-family:var(--mono)">${lbl}</span><span style="font-size:11px;color:var(--text3);margin-left:8px">${w}W/${l}L (${wr.toFixed(0)}%) · ${b2.length}b</span></div><div style="font-family:var(--mono);font-weight:700;font-size:13px;color:${p>=0?'var(--green)':'var(--red)'}">${p>=0?'+':''}${fmt(p)}</div></div>`}).filter(Boolean).join('')}</div></div></div>`:''})()}
-
-    <!-- Day of week -->
-    ${(()=>{const dn=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];const bd=Array(7).fill(0).map(()=>({w:0,l:0,p:0,n:0}));s.settled.forEach(b=>{const d=new Date(b.date).getDay();bd[d].n++;bd[d].p+=(b.returns||0)-b.stake;b.status==='won'?bd[d].w++:bd[d].l++});const mx=Math.max(...bd.map(x=>Math.abs(x.p)),1);return`<div class="card fade-in"><div class="card-title">Profit by Day of Week</div><div style="display:flex;gap:6px;margin-top:10px">${bd.map((d,i)=>{const h=d.n?Math.max(Math.abs(d.p)/mx*50,4):4;return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px"><div style="font-family:var(--mono);font-size:10px;font-weight:600;color:${d.n?(d.p>=0?'var(--green)':'var(--red)'):'var(--text4)'}">${d.n?(d.p>=0?'+':'')+d.p.toFixed(0):'—'}</div><div style="width:100%;height:${h}px;border-radius:3px;background:${d.n?(d.p>=0?'var(--green)':'var(--red)'):'var(--border)'};opacity:0.5"></div><div style="font-size:10px;color:var(--text3)">${dn[i]}</div></div>`}).join('')}</div></div>`})()}`;
+    <div class="card fade-in"><div class="card-title">CUMULATIVE PROFIT</div>${sparkSVG(s.profitCurve,600,90,s.profit>=0?'var(--green)':'var(--red)')}</div>`;
 }
 
 // ================================================================
@@ -1059,7 +1074,7 @@ function renderDoelen(){
       <div class="grid-4" style="gap:10px">
         <div class="input-group"><label class="input-label">Name</label><input class="input" placeholder="€500 profit" value="${esc(gf.name)}" oninput="gf.name=this.value"></div>
         <div class="input-group"><label class="input-label">Type</label><select class="select" onchange="gf.type=this.value"><option value="profit" ${gf.type==='profit'?'selected':''}>Profit (€)</option><option value="bankroll" ${gf.type==='bankroll'?'selected':''}>Bankroll (€)</option><option value="profitreak" ${gf.type==='profitreak'?'selected':''}>Win Streak</option><option value="bets" ${gf.type==='bets'?'selected':''}>Total Bets</option></select></div>
-        <div class="input-group"><label class="input-label">Target</label><input class="input" type="number" placeholder="500" value="${gf.target}" oninput="gf.target=this.value"></div>
+        <div class="input-group"><label class="input-label">Doel</label><input class="input" type="number" placeholder="500" value="${gf.target}" oninput="gf.target=this.value"></div>
         <div class="input-group"><label class="input-label">Deadline</label><input class="input" type="date" value="${gf.deadline}" oninput="gf.deadline=this.value"></div>
       </div>
       <div style="margin-top:10px;text-align:right"><button class="btn btn-primary" onclick="addGoal()">🎯 Add</button></div>
@@ -1078,9 +1093,9 @@ function renderChallenges(){
     <div class="card fade-in" style="margin-bottom:24px">
       <div class="grid-2" style="gap:10px">
         <div class="input-group"><label class="input-label">Name</label><input class="input" placeholder="€10→€100" value="${esc(cf.name)}" oninput="cf.name=this.value"></div>
-        <div class="input-group"><label class="input-label">Description</label><input class="input" placeholder="Singles only, odds >2.00" value="${esc(cf.description)}" oninput="cf.description=this.value"></div>
+        <div class="input-group"><label class="input-label">Description</label><input class="input" placeholder="Alleen live >2.00" value="${esc(cf.description)}" oninput="cf.description=this.value"></div>
         <div class="input-group"><label class="input-label">Start €</label><input class="input" type="number" placeholder="10" value="${cf.startBalance}" oninput="cf.startBalance=this.value"></div>
-        <div class="input-group"><label class="input-label">Target €</label><input class="input" type="number" placeholder="100" value="${cf.targetAmount}" oninput="cf.targetAmount=this.value"></div>
+        <div class="input-group"><label class="input-label">Doel €</label><input class="input" type="number" placeholder="100" value="${cf.targetAmount}" oninput="cf.targetAmount=this.value"></div>
         <div class="input-group"><label class="input-label">Max Bets</label><input class="input" type="number" placeholder="20" value="${cf.maxBets}" oninput="cf.maxBets=this.value"></div>
         <div class="input-group"><label class="input-label">Deadline</label><input class="input" type="date" value="${cf.deadline}" oninput="cf.deadline=this.value"></div>
       </div>
@@ -1294,11 +1309,11 @@ function showApp(){
     document.getElementById('tab-dashboard').innerHTML=`
       <div style="text-align:center;padding:60px 20px">
         <svg viewBox="0 0 56 56" fill="none" style="width:64px;height:64px;margin-bottom:16px"><defs><linearGradient id="wlg" x1="0" y1="0" x2="56" y2="56"><stop offset="0%" stop-color="#00ffa3"/><stop offset="100%" stop-color="#00b4ff"/></linearGradient></defs><path d="M28 4C18 4 10 14 8 22C6 30 10 40 16 44C18 45.5 20 46 22 46L24 42C22 40 18 36 18 30C18 24 22 18 28 16C34 18 38 24 38 30C38 36 34 40 32 42L34 46C36 46 38 45.5 40 44C46 40 50 30 48 22C46 14 38 4 28 4Z" fill="url(#wlg)" opacity="0.9"/></svg>
-        <div style="font-size:28px;font-weight:900;background:linear-gradient(135deg,var(--green),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px">Welcome${S.userName?', '+S.userName:''}!</div>
+        <div style="font-size:28px;font-weight:900;background:linear-gradient(135deg,var(--green),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px">Welkom${S.userName?', '+S.userName:''}!</div>
         <div style="font-size:15px;color:var(--text2);max-width:500px;margin:0 auto 32px;line-height:1.6">Your tracker is empty. Want to load demo data to see how everything works, or start with your own bets right away?</div>
         <div style="display:flex;gap:12px;justify-content:center">
           <button class="btn btn-primary" onclick="loadDemoData()" style="padding:14px 32px;font-size:15px">Load Demo Data</button>
-          <button class="btn btn-secondary" onclick="switchTab('nieuwe-bet')" style="padding:14px 32px;font-size:15px">Place First Bet</button>
+          <button class="btn btn-secondary" onclick="switchTab('nieuwe-bet')" style="padding:14px 32px;font-size:15px">Eerste Place Bet</button>
         </div>
         <div style="margin-top:40px;font-size:12px;color:var(--text3)">Tip: You can always clear demo data via Data & Backup</div>
       </div>`;
