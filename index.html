@@ -894,76 +894,237 @@ function submitBet(){
   bf={match:'',bet:'',odds:'',sport:'Football',unitPct:S.settings.defaultUnit,customStake:'',useCustom:false,competition:'',date:new Date().toISOString().slice(0,10),notes:'',betType:bf.betType,bookmaker:bf.bookmaker,_home:'',_away:''};renderNieuweBet()
 }
 // ================================================================
-// SLIP SCANNER (AI-ready)
+// SLIP SCANNER — AI-powered with Claude Vision API
 // ================================================================
+function getApiKey(){return localStorage.getItem('bs-api-key')||''}
+function setApiKey(k){localStorage.setItem('bs-api-key',k)}
+
 function renderScanner(){
+  const hasKey=!!getApiKey();
   document.getElementById('tab-scanner').innerHTML=`
     <div class="card fade-in" style="margin-bottom:24px">
-      <div style="font-size:14px;font-weight:600;margin-bottom:6px">📸 Bet Slip Scanner</div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:20px">Take a photo of your physical bet slip or digital screenshot. AI reads your bet and fills everything in automatically.</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="font-size:14px;font-weight:600">Bet Slip Scanner</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="width:8px;height:8px;border-radius:50%;background:${hasKey?'var(--green)':'var(--red)'}"></div>
+          <span style="font-size:11px;color:var(--text3)">${hasKey?'AI Ready':'API Key Required'}</span>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:20px">Upload a screenshot or photo of your bet slip. AI reads match, selection, odds, stake and bookmaker automatically.</div>
       <div class="scanner-zone" onclick="document.getElementById('slip-upload').click()">
         <div class="glow"></div>
-        <div style="font-size:48px;margin-bottom:12px">📷</div>
-        <div style="font-size:16px;font-weight:700;color:var(--green);margin-bottom:4px">Tap to take or upload a photo</div>
-        <div style="font-size:12px;color:var(--text3)">Supports: bet slip photos, receipts, bookmaker screenshots</div>
+        <div style="margin-bottom:12px;color:var(--green)">${IC.scan||IC.camera}</div>
+        <div style="font-size:16px;font-weight:700;color:var(--green);margin-bottom:4px">Tap to upload a photo</div>
+        <div style="font-size:12px;color:var(--text3)">Supports: bet slip photos, app screenshots, bookmaker receipts</div>
       </div>
       <input type="file" id="slip-upload" accept="image/*" capture="environment" style="display:none" onchange="handleSlipUpload(event)">
     </div>
+
+    <!-- API Key Setup -->
+    <div class="card fade-in" style="margin-bottom:24px">
+      <div class="card-title">AI CONFIGURATION</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Enter your Anthropic API key to enable AI scanning. Your key is stored locally and never sent anywhere except Anthropic's API.</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input class="input" type="password" id="api-key-input" placeholder="sk-ant-api03-..." value="${esc(getApiKey())}" style="flex:1;font-size:12px">
+        <button class="btn btn-primary btn-sm" onclick="setApiKey(document.getElementById('api-key-input').value);toast('API key saved');renderScanner()">Save</button>
+        ${hasKey?`<button class="btn btn-ghost btn-sm" onclick="setApiKey('');document.getElementById('api-key-input').value='';toast('Key removed');renderScanner()">Clear</button>`:''}
+      </div>
+      ${!hasKey?`<div style="margin-top:12px;padding:12px;background:var(--card);border-radius:var(--radius-sm);border:1px solid var(--border)">
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px">How to get an API key:</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.7">
+          1. Go to <a href="https://console.anthropic.com" target="_blank" style="color:var(--green)">console.anthropic.com</a><br>
+          2. Create account → Settings → API Keys<br>
+          3. Create Key → copy the <span style="font-family:var(--mono);font-size:10px">sk-ant-...</span> value<br>
+          4. Cost: ~$0.001 per scan (1000 scans ≈ $1)
+        </div>
+      </div>`:''}
+    </div>
+
     <div class="grid-2">
       <div class="card">
-        <div class="card-title">How does it work?</div>
+        <div class="card-title">How it works</div>
         <div style="font-size:13px;color:var(--text2);line-height:1.7">
-          <div style="margin-bottom:8px"><strong style="color:var(--green)">1.</strong> Take a photo of your bet slip (physical or digital)</div>
-          <div style="margin-bottom:8px"><strong style="color:var(--green)">2.</strong> Our AI automatically recognizes: match, selection, odds and stake</div>
-          <div style="margin-bottom:8px"><strong style="color:var(--green)">3.</strong> Review the data and confirm with one click</div>
-          <div><strong style="color:var(--green)">4.</strong> The bet is added to your tracker</div>
+          <div style="margin-bottom:8px"><span style="color:var(--green);font-weight:700">1.</span> Take a photo or screenshot of your bet slip</div>
+          <div style="margin-bottom:8px"><span style="color:var(--green);font-weight:700">2.</span> AI reads: match, selection, odds, stake, bookmaker</div>
+          <div style="margin-bottom:8px"><span style="color:var(--green);font-weight:700">3.</span> Review the extracted data and edit if needed</div>
+          <div><span style="color:var(--green);font-weight:700">4.</span> Confirm → bet is added to your tracker</div>
         </div>
       </div>
       <div class="card">
         <div class="card-title">Supported formats</div>
         <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
-          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(16,185,129,0.03);border-radius:var(--radius-sm)"><span style="font-size:20px">🏪</span><div><div style="font-size:13px;font-weight:600">Physical bet slips</div><div style="font-size:11px;color:var(--text3)">Newsagent, bet shop receipts</div></div></div>
-          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(0,180,255,0.03);border-radius:var(--radius-sm)"><span style="font-size:20px">📱</span><div><div style="font-size:13px;font-weight:600">App screenshots</div><div style="font-size:11px;color:var(--text3)">Napoleon Games, Unibet, Betway...</div></div></div>
-          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(168,85,247,0.03);border-radius:var(--radius-sm)"><span style="font-size:20px">🖥</span><div><div style="font-size:13px;font-weight:600">Desktop screenshots</div><div style="font-size:11px;color:var(--text3)">Any bookmaker website</div></div></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(16,185,129,0.03);border-radius:var(--radius-sm)"><span style="color:var(--green)">${IC.camera}</span><div><div style="font-size:13px;font-weight:600">Physical bet slips</div><div style="font-size:11px;color:var(--text3)">Newsagent, bet shop receipts</div></div></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(16,185,129,0.03);border-radius:var(--radius-sm)"><span style="color:var(--green)">${IC.list}</span><div><div style="font-size:13px;font-weight:600">App screenshots</div><div style="font-size:11px;color:var(--text3)">Napoleon Games, Unibet, Betway, bet365...</div></div></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(16,185,129,0.03);border-radius:var(--radius-sm)"><span style="color:var(--green)">${IC.dashboard}</span><div><div style="font-size:13px;font-weight:600">Desktop screenshots</div><div style="font-size:11px;color:var(--text3)">Any bookmaker website</div></div></div>
         </div>
       </div>
     </div>
-    <div id="scanner-result" style="margin-top:24px"></div>`;
+
+    <!-- Scan history -->
+    <div style="margin-top:16px;font-size:11px;color:var(--text3)">${S.scannedSlips||0} slips scanned total</div>
+    <div id="scanner-result" style="margin-top:16px"></div>`;
 }
-function handleSlipUpload(event){
+
+async function handleSlipUpload(event){
   const file=event.target.files[0];if(!file)return;
   const reader=new FileReader();
-  reader.onload=function(e){
+  reader.onload=async function(e){
     const imgData=e.target.result;
-    S.scannedSlips=(S.scannedSlips||0)+1;saveState();
+    const base64=imgData.split(',')[1];
+    const mediaType=file.type||'image/jpeg';
+
+    // Show loading state
     document.getElementById('scanner-result').innerHTML=`
       <div class="card fade-in">
         <div style="display:flex;gap:20px;align-items:flex-start">
-          <img src="${imgData}" style="max-width:200px;border-radius:var(--radius-sm);border:1px solid var(--border)">
+          <img src="${imgData}" style="max-width:180px;border-radius:var(--radius-sm);border:1px solid var(--border)">
           <div style="flex:1">
-            <div style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:12px">✅ Photo received!</div>
-            <div style="font-size:13px;color:var(--text2);margin-bottom:16px">
-              In the full version, our AI automatically recognizes all bet data. For now, you can manually enter the data based on the photo:
+            <div style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:8px">Photo received</div>
+            <div id="scan-status" style="font-size:13px;color:var(--text2)">
+              ${getApiKey()?'<div style="display:flex;align-items:center;gap:8px"><div style="width:16px;height:16px;border:2px solid var(--green);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite"></div> Analyzing with AI...</div>':'<div style="color:var(--dim)">No API key configured. Enter data manually below.</div>'}
             </div>
-            <div class="grid-2" style="gap:10px">
-              <div class="input-group"><label class="input-label">Match</label><input class="input" id="scan-match" placeholder="From the photo..."></div>
-              <div class="input-group"><label class="input-label">Bet</label><input class="input" id="scan-bet" placeholder="Selection..."></div>
-              <div class="input-group"><label class="input-label">Odds</label><input class="input" id="scan-odds" type="number" step="0.01" placeholder="Odds..."></div>
-              <div class="input-group"><label class="input-label">Stake</label><input class="input" id="scan-stake" type="number" step="0.01" placeholder="Amount..."></div>
-            </div>
-            <div style="margin-top:12px;display:flex;gap:8px">
-              <button class="btn btn-primary" onclick="addScannedBet()">➕ Add to Tracker</button>
-              <button class="btn btn-ghost" onclick="document.getElementById('scanner-result').innerHTML=''">Cancel</button>
+            <div id="scan-fields" style="margin-top:16px;display:none">
+              <div class="grid-2" style="gap:10px">
+                <div class="input-group"><label class="input-label">Match</label><input class="input" id="scan-match" placeholder="Match..."></div>
+                <div class="input-group"><label class="input-label">Selection</label><input class="input" id="scan-bet" placeholder="Selection..."></div>
+                <div class="input-group"><label class="input-label">Odds</label><input class="input" id="scan-odds" type="number" step="0.01" placeholder="Odds..."></div>
+                <div class="input-group"><label class="input-label">Stake</label><input class="input" id="scan-stake" type="number" step="0.01" placeholder="Amount..."></div>
+                <div class="input-group"><label class="input-label">Bookmaker</label><select class="select" id="scan-bookie" style="font-family:var(--sans)">${BOOKMAKERS.map(b=>`<option>${b}</option>`).join('')}</select></div>
+                <div class="input-group"><label class="input-label">Bet Type</label><select class="select" id="scan-type" style="font-family:var(--sans)"><option>Single</option><option>Combi</option><option>System</option><option>Bet Builder</option></select></div>
+                <div class="input-group"><label class="input-label">Sport</label><select class="select" id="scan-sport" style="font-family:var(--sans)">${SPORTS.map(sp=>`<option>${sp}</option>`).join('')}</select></div>
+                <div class="input-group"><label class="input-label">Competition</label><input class="input" id="scan-comp" placeholder="e.g. JPL, UCL..."></div>
+              </div>
+              <div style="margin-top:12px;display:flex;gap:8px">
+                <button class="btn btn-primary" onclick="addScannedBet()">Add to Tracker</button>
+                <button class="btn btn-ghost" onclick="document.getElementById('scanner-result').innerHTML=''">Cancel</button>
+              </div>
             </div>
           </div>
         </div>
       </div>`;
-  };reader.readAsDataURL(file)}
+
+    // Add spin animation if not already present
+    if(!document.getElementById('spin-style')){
+      const st=document.createElement('style');st.id='spin-style';
+      st.textContent='@keyframes spin{to{transform:rotate(360deg)}}';
+      document.head.appendChild(st);
+    }
+
+    const apiKey=getApiKey();
+    if(!apiKey){
+      // No API key — show manual fields immediately
+      document.getElementById('scan-fields').style.display='block';
+      document.getElementById('scan-status').innerHTML='<div style="color:var(--dim)">No API key. Fill in manually or add a key in settings above.</div>';
+      return;
+    }
+
+    // Call Claude Vision API
+    try{
+      const res=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'x-api-key':apiKey,
+          'anthropic-version':'2023-06-01',
+          'anthropic-dangerous-direct-browser-access':'true'
+        },
+        body:JSON.stringify({
+          model:'claude-haiku-4-5-20251001',
+          max_tokens:1024,
+          messages:[{
+            role:'user',
+            content:[
+              {type:'image',source:{type:'base64',media_type:mediaType,data:base64}},
+              {type:'text',text:'Analyze this bet slip image. Extract the following information and return ONLY a JSON object (no markdown, no backticks, no explanation):\n\n{\n  "bets": [\n    {\n      "match": "Team A vs Team B",\n      "selection": "the bet selection (e.g. Over 2.5, Home Win, BTTS Yes)",\n      "odds": 1.85,\n      "stake": 50.00,\n      "sport": "Football",\n      "competition": "Premier League",\n      "bookmaker": "Napoleon Games"\n    }\n  ],\n  "betType": "Single or Combi or System",\n  "totalOdds": 1.85,\n  "totalStake": 50.00\n}\n\nRules:\n- If multiple selections on one slip, include all in the bets array\n- Odds must be decimal format (not fractional)\n- Stake in euros\n- If you can identify the bookmaker from the design/logo, include it\n- If you cannot read a field clearly, use null\n- For combi/parlay bets, each leg is a separate entry in bets array\n- totalOdds is the combined odds for combis\n- Return ONLY the JSON, nothing else'}
+            ]
+          }]
+        })
+      });
+
+      if(!res.ok){
+        const err=await res.text();
+        throw new Error('API error: '+res.status+' '+err.slice(0,200));
+      }
+
+      const data=await res.json();
+      const text=data.content?.[0]?.text||'';
+
+      // Parse JSON response
+      let parsed;
+      try{
+        const clean=text.replace(/```json\s*|```/g,'').trim();
+        parsed=JSON.parse(clean);
+      }catch(pe){
+        throw new Error('Could not parse AI response: '+text.slice(0,200));
+      }
+
+      // Fill in the fields
+      const fields=document.getElementById('scan-fields');
+      if(!fields)return;
+      fields.style.display='block';
+
+      const bets=parsed.bets||[];
+      if(bets.length>0){
+        const b=bets[0];
+        const matchField=document.getElementById('scan-match');
+        const betField=document.getElementById('scan-bet');
+        const oddsField=document.getElementById('scan-odds');
+        const stakeField=document.getElementById('scan-stake');
+        const bookieField=document.getElementById('scan-bookie');
+        const typeField=document.getElementById('scan-type');
+        const sportField=document.getElementById('scan-sport');
+        const compField=document.getElementById('scan-comp');
+
+        // For combi: join all matches/selections
+        if(bets.length>1){
+          if(matchField)matchField.value=bets.map(x=>x.match).filter(Boolean).join(' + ');
+          if(betField)betField.value=bets.map(x=>x.selection).filter(Boolean).join(' / ');
+          if(oddsField)oddsField.value=parsed.totalOdds||bets.reduce((a,x)=>a*(x.odds||1),1).toFixed(2);
+          if(typeField){typeField.value=parsed.betType||'Combi'}
+        }else{
+          if(matchField)matchField.value=b.match||'';
+          if(betField)betField.value=b.selection||'';
+          if(oddsField)oddsField.value=b.odds||'';
+          if(typeField){typeField.value=parsed.betType||'Single'}
+        }
+        if(stakeField)stakeField.value=parsed.totalStake||b.stake||'';
+        if(bookieField&&b.bookmaker){
+          // Try to match bookmaker
+          const opts=[...bookieField.options].map(o=>o.value);
+          const match=opts.find(o=>o.toLowerCase().includes((b.bookmaker||'').toLowerCase()));
+          if(match)bookieField.value=match;
+        }
+        if(sportField&&b.sport){sportField.value=b.sport}
+        if(compField&&b.competition){compField.value=b.competition}
+      }
+
+      // Update status
+      document.getElementById('scan-status').innerHTML='<div style="color:var(--green);font-weight:600">AI scan complete — '+bets.length+' bet'+(bets.length!==1?'s':'')+' detected. Review and confirm below.</div>';
+      S.scannedSlips=(S.scannedSlips||0)+1;saveState();
+
+    }catch(err){
+      console.error('Scanner error:',err);
+      document.getElementById('scan-status').innerHTML='<div style="color:var(--red)">'+err.message+'</div><div style="font-size:11px;color:var(--text3);margin-top:4px">You can still fill in the data manually below.</div>';
+      document.getElementById('scan-fields').style.display='block';
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
 function addScannedBet(){
-  const m=document.getElementById('scan-match').value,b=document.getElementById('scan-bet').value,o=parseFloat(document.getElementById('scan-odds').value),st=parseFloat(document.getElementById('scan-stake').value);
-  if(!m||!b||!o||!st){toast('Fill in all fields','error');return}
-  const scBet={id:uid(),match:m,bet:b,odds:o,stake:st,sport:'Football',competition:'',date:new Date().toISOString().slice(0,10),notes:'Via Slip Scanner',betType:'Single',bookmaker:'',unitPct:null,status:'pending',returns:0,createdAt:new Date().toISOString(),scanned:true};S.bets.push(scBet);saveBet(scBet);
-  saveState();toast('Scanned bet added! 📸');document.getElementById('scanner-result').innerHTML='';renderScanner()}
+  const m=document.getElementById('scan-match')?.value;
+  const b=document.getElementById('scan-bet')?.value;
+  const o=parseFloat(document.getElementById('scan-odds')?.value);
+  const st=parseFloat(document.getElementById('scan-stake')?.value);
+  const bookie=document.getElementById('scan-bookie')?.value||'';
+  const betType=document.getElementById('scan-type')?.value||'Single';
+  const sport=document.getElementById('scan-sport')?.value||'Football';
+  const comp=document.getElementById('scan-comp')?.value||'';
+  if(!m||!b||!o||!st){toast('Fill in all required fields','error');return}
+  const scBet={id:uid(),match:m,bet:b,odds:o,stake:st,sport:sport,competition:comp,date:new Date().toISOString().slice(0,10),notes:'Via Slip Scanner',betType:betType,bookmaker:bookie,unitPct:null,status:'pending',returns:0,createdAt:new Date().toISOString(),scanned:true};
+  S.bets.push(scBet);saveBet(scBet);
+  saveState();toast('Scanned bet added!');document.getElementById('scanner-result').innerHTML='';renderScanner();
+}
 
 // ================================================================
 // BETS LIST
