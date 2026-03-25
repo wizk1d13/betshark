@@ -427,7 +427,7 @@ const ACHIEVEMENTS = [
   { id:'bankroll_double', iconKey:'streak', name:'Moon Shot', desc:'Double your starting bankroll', xp:200, check:s=>s.bankroll>=s.initialBankroll*2 },
   { id:'diverse', iconKey:'globe', name:'Globe Trotter', desc:'Bet on 5 different sports', xp:35, check:s=>new Set(s.bets.map(b=>b.sport)).size>=5 },
 ];
-function achIcon(a){return `<span style="display:inline-flex;width:24px;height:24px;align-items:center;justify-content:center">${IC[achIcon(a)Key]||IC.star}</span>`}
+function achIcon(a){return `<span style="display:inline-flex;width:24px;height:24px;align-items:center;justify-content:center">${IC[a.iconKey]||IC.star}</span>`}
 
 const SPORTS = ['Football','Tennis','Basketball','Baseball','Esports','MMA','Handball','Volleyball','Darts','Cycling','Snooker','Rugby','Hockey','Cricket','Other'];
 const BET_TYPES = ['Single','Combi','System','Live','Ante-Post'];
@@ -1338,11 +1338,11 @@ function showApp(){
     document.getElementById('tab-dashboard').innerHTML=`
       <div style="text-align:center;padding:60px 20px">
         <svg viewBox="0 0 56 56" fill="none" style="width:64px;height:64px;margin-bottom:16px"><defs><linearGradient id="wlg" x1="0" y1="0" x2="56" y2="56"><stop offset="0%" stop-color="var(--accent)"/><stop offset="100%" stop-color="var(--accent)"/></linearGradient></defs><path d="M28 4C18 4 10 14 8 22C6 30 10 40 16 44C18 45.5 20 46 22 46L24 42C22 40 18 36 18 30C18 24 22 18 28 16C34 18 38 24 38 30C38 36 34 40 32 42L34 46C36 46 38 45.5 40 44C46 40 50 30 48 22C46 14 38 4 28 4Z" fill="url(#wlg)" opacity="0.9"/></svg>
-        <div style="font-size:28px;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px">Welkom${S.userName?', '+S.userName:''}!</div>
+        <div style="font-size:28px;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px">Welcome${S.userName?', '+S.userName:''}!</div>
         <div style="font-size:15px;color:var(--text2);max-width:500px;margin:0 auto 32px;line-height:1.6">Your tracker is empty. Want to load demo data to see how everything works, or start with your own bets right away?</div>
         <div style="display:flex;gap:12px;justify-content:center">
           <button class="btn btn-primary" onclick="loadDemoData()" style="padding:14px 32px;font-size:15px">Load Demo Data</button>
-          <button class="btn btn-secondary" onclick="switchTab('nieuwe-bet')" style="padding:14px 32px;font-size:15px">Eerste Place Bet</button>
+          <button class="btn btn-secondary" onclick="switchTab('nieuwe-bet')" style="padding:14px 32px;font-size:15px">Place First Bet</button>
         </div>
         <div style="margin-top:40px;font-size:12px;color:var(--text3)">Tip: You can always clear demo data via Data & Backup</div>
       </div>`;
