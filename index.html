@@ -224,6 +224,14 @@ textarea.input{font-family:var(--sans);resize:vertical;min-height:56px}
 [data-theme="light"] .filter-btn.active{background:rgba(3,105,161,0.08);color:#0369a1;border-color:rgba(3,105,161,0.12)}
 [data-theme="light"] .login-btn{background:linear-gradient(135deg,#0369a1,#0284c7);color:#fff}
 [data-theme="light"] .progress-fill{background:linear-gradient(90deg,#0369a1,#0284c7)}
+[data-theme="light"] .stat-value{color:var(--text)}
+[data-theme="light"] .card{background:rgba(0,0,0,0.02);border-color:rgba(0,0,0,0.06)}
+[data-theme="light"] .stat-card{background:rgba(0,0,0,0.02);border-color:rgba(0,0,0,0.06)}
+[data-theme="light"] .level-ring{border-color:#0369a1;color:#0369a1}
+[data-theme="light"] .ach-xp{color:#0369a1!important}
+[data-theme="light"] .scanner-zone{border-color:rgba(3,105,161,0.25);background:rgba(3,105,161,0.02)}
+[data-theme="light"] .scanner-zone:hover{border-color:rgba(3,105,161,0.4)}
+[data-theme="light"] .reversal-card{background:rgba(220,38,38,0.04);border-color:rgba(220,38,38,0.12)}
 [data-theme="light"] ::selection{background:rgba(5,150,105,0.2)}
 [data-theme="light"] ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.08)}
 </style>
@@ -238,11 +246,14 @@ textarea.input{font-family:var(--sans);resize:vertical;min-height:56px}
   <div class="login-card">
     <!-- Shark SVG Logo -->
     <svg class="login-logo-icon" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs><linearGradient id="lg" x1="0" y1="0" x2="56" y2="56"><stop offset="0%" stop-color="#00ffa3"/><stop offset="100%" stop-color="#00b4ff"/></linearGradient></defs>
-      <path d="M28 4C18 4 10 14 8 22C6 30 10 40 16 44C18 45.5 20 46 22 46L24 42C22 40 18 36 18 30C18 24 22 18 28 16C34 18 38 24 38 30C38 36 34 40 32 42L34 46C36 46 38 45.5 40 44C46 40 50 30 48 22C46 14 38 4 28 4Z" fill="url(#lg)" opacity="0.9"/>
-      <path d="M24 28L28 34L32 28" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
-      <circle cx="22" cy="22" r="2" fill="white" opacity="0.5"/>
-      <circle cx="34" cy="22" r="2" fill="white" opacity="0.5"/>
+      <defs><linearGradient id="lg" x1="0" y1="0" x2="56" y2="56"><stop offset="0%" stop-color="var(--green)"/><stop offset="100%" stop-color="var(--green2)"/></linearGradient></defs>
+      <!-- Shark fin -->
+      <path d="M28 6 L22 38 C22 38 24 42 28 42 C32 42 34 38 34 38 Z" fill="url(#lg)" opacity="0.9"/>
+      <!-- Water line -->
+      <path d="M8 38 Q14 34 20 38 Q26 42 32 38 Q38 34 44 38 Q50 42 56 38" stroke="var(--green)" stroke-width="2" fill="none" opacity="0.3" stroke-linecap="round"/>
+      <path d="M4 42 Q10 38 16 42 Q22 46 28 42 Q34 38 40 42 Q46 46 52 42" stroke="var(--green)" stroke-width="1.5" fill="none" opacity="0.15" stroke-linecap="round"/>
+      <!-- Shark teeth hint at bottom of fin -->
+      <path d="M25 36 L26.5 33 L28 36 L29.5 33 L31 36" stroke="white" stroke-width="1.2" fill="none" opacity="0.4" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     <div class="login-logo">BETSHARK</div>
     <div class="login-sub">
@@ -795,7 +806,7 @@ function showTeamDD(pfx,side){
   const exclude=(other||otherH||'').toLowerCase();
   const filtered=(v?teams.filter(t=>t.toLowerCase().includes(v)):teams).filter(t=>t.toLowerCase()!==exclude);
   if(!filtered.length){dd.style.display='none';return}
-  dd.innerHTML=filtered.map(t=>`<div style="padding:7px 12px;cursor:pointer;font-size:12px;color:var(--text);transition:background 0.1s" onmouseenter="this.style.background='rgba(0,230,138,0.06)'" onmouseleave="this.style.background=''" onmousedown="event.preventDefault();document.getElementById('${pfx}-${side}').value='${t}';buildMatch('${pfx}');this.parentElement.style.display='none'">${t}</div>`).join('');
+  dd.innerHTML=filtered.map(t=>`<div style="padding:7px 12px;cursor:pointer;font-size:12px;color:var(--text);transition:background 0.1s" onmouseenter="this.style.background='rgba(0,230,138,0.06)'" onmouseleave="this.style.background=''" onmousedown="event.preventDefault();_ddClick=true;document.getElementById('${pfx}-${side}').value='${t}';buildMatch('${pfx}');this.parentElement.style.display='none';document.getElementById('${pfx}-${side}').focus()">${t}</div>`).join('');
   dd.style.display='block';
 }
 function buildMatch(pfx){
@@ -804,7 +815,13 @@ function buildMatch(pfx){
   const match=(h&&a)?h+' vs '+a:(h||a);
   if(pfx==='bf'){bf.match=match;bf._home=h;bf._away=a}
 }
-document.addEventListener('click',e=>{document.querySelectorAll('[id$=-dd-home],[id$=-dd-away]').forEach(dd=>{if(!dd.contains(e.target))dd.style.display='none'})});
+let _ddClick=false;
+document.addEventListener('mousedown',e=>{
+  setTimeout(()=>{if(_ddClick){_ddClick=false;return}
+  document.querySelectorAll('[id$=-dd-home],[id$=-dd-away]').forEach(dd=>{
+    if(!dd.contains(e.target)&&e.target.id?.indexOf('-home')===-1&&e.target.id?.indexOf('-away')===-1)dd.style.display='none'
+  })},150);
+});
 
 function renderNieuweBet(){
   const isC=bf.betType==='Combi'||bf.betType==='System'||bf.betType==='Bet Builder';
@@ -1336,7 +1353,7 @@ function showApp(){
   document.getElementById('header-date').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   checkConnection();
   if(S.userName){
-    document.querySelector('.logo').innerHTML=IC.dashboard+` BETSHARK <span class="logo-v">2.0</span>`;
+    document.querySelector('.logo').innerHTML='<svg viewBox="0 0 20 20" fill="none" style="width:20px;height:20px"><defs><linearGradient id="slg2" x1="0" y1="0" x2="20" y2="20"><stop offset="0%" stop-color="var(--green)"/><stop offset="100%" stop-color="var(--green2)"/></linearGradient></defs><path d="M10 2L7.5 14C7.5 14 8.5 16 10 16C11.5 16 12.5 14 12.5 14Z" fill="url(#slg2)" opacity="0.9"/><path d="M3 14Q6 12.5 9 14.5Q12 16.5 15 14" stroke="var(--green)" stroke-width="1" fill="none" opacity="0.3"/></svg> BETSHARK <span class="logo-v">3.0</span>';
   }
   if(S.bets.length===0){
     switchTab('dashboard');
