@@ -202,13 +202,13 @@ textarea.input{font-family:var(--sans);resize:vertical;min-height:56px}
 .login-footer{margin-top:28px;font-size:11px;color:var(--text4)}
 
 /* Light theme */
-[data-theme="light"]{--bg:#faf9f7;--bg2:#f0eeeb;--bg3:#e8e6e2;--card:rgba(0,0,0,0.025);--card-h:rgba(0,0,0,0.05);--border:rgba(0,0,0,0.07);--border-h:rgba(0,0,0,0.13);--text:#1a1d23;--text2:rgba(0,0,0,0.55);--text3:rgba(0,0,0,0.35);--text4:rgba(0,0,0,0.15);--green:#059669;--green2:#047857;--accent:#059669;--red:#dc2626;--dim:#94a3b8;--dim2:#64748b}
+[data-theme="light"]{--bg:#faf9f7;--bg2:#f0eeeb;--bg3:#e8e6e2;--card:rgba(0,0,0,0.025);--card-h:rgba(0,0,0,0.05);--border:rgba(0,0,0,0.07);--border-h:rgba(0,0,0,0.13);--text:#1a1d23;--text2:rgba(0,0,0,0.55);--text3:rgba(0,0,0,0.35);--text4:rgba(0,0,0,0.15);--green:#0369a1;--green2:#075985;--accent:#0369a1;--red:#dc2626;--dim:#94a3b8;--dim2:#64748b}
 [data-theme="light"] body{background:var(--bg);color:var(--text)}
 [data-theme="light"] body::before{opacity:0.008}
 [data-theme="light"] .glow-tl,[data-theme="light"] .glow-br{opacity:0}
 [data-theme="light"] .input,[data-theme="light"] .select{background:rgba(0,0,0,0.03);color:var(--text);border-color:var(--border)}
 [data-theme="light"] option{background:var(--bg2);color:var(--text)}
-[data-theme="light"] .btn-primary{background:var(--green);color:#fff;box-shadow:none}
+[data-theme="light"] .btn-primary{background:linear-gradient(135deg,#0369a1,#0284c7);color:#fff;box-shadow:none}
 [data-theme="light"] .btn-secondary{background:rgba(0,0,0,0.05);color:var(--text)}
 [data-theme="light"] .login-screen{background:var(--bg)}
 [data-theme="light"] .login-input{background:rgba(0,0,0,0.04);color:var(--text);border-color:var(--border)}
@@ -217,6 +217,13 @@ textarea.input{font-family:var(--sans);resize:vertical;min-height:56px}
 [data-theme="light"] .content-header{background:rgba(250,249,247,0.92)}
 [data-theme="light"] .sidebar{background:var(--bg2)}
 [data-theme="light"] .toast-success{background:var(--green);color:#fff}
+
+[data-theme="light"] .sidebar-balance{background:rgba(3,105,161,0.06);border-color:rgba(3,105,161,0.12)}
+[data-theme="light"] .sidebar-balance-value{color:#0369a1}
+[data-theme="light"] .nav-item.active{background:rgba(3,105,161,0.08);color:#0369a1;border-color:rgba(3,105,161,0.15)}
+[data-theme="light"] .filter-btn.active{background:rgba(3,105,161,0.08);color:#0369a1;border-color:rgba(3,105,161,0.12)}
+[data-theme="light"] .login-btn{background:linear-gradient(135deg,#0369a1,#0284c7);color:#fff}
+[data-theme="light"] .progress-fill{background:linear-gradient(90deg,#0369a1,#0284c7)}
 [data-theme="light"] ::selection{background:rgba(5,150,105,0.2)}
 [data-theme="light"] ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.08)}
 </style>
@@ -685,7 +692,7 @@ function renderDashboard(){
 // ================================================================
 // NEW BET — Unified form for all bet types
 // ================================================================
-let bf={match:'',bet:'',odds:'',sport:'Football',unitPct:3,customStake:'',useCustom:false,competition:'',date:new Date().toISOString().slice(0,10),notes:'',betType:'Single',bookmaker:'Napoleon Games'};
+let bf={match:'',bet:'',odds:'',sport:'Football',unitPct:3,customStake:'',useCustom:false,competition:'',date:new Date().toISOString().slice(0,10),notes:'',betType:'Single',bookmaker:'Napoleon Games',_home:'',_away:''};
 let combiLegs=[];
 const QUICK_COMPS=['JPL','UCL','Europa League','Premier League','La Liga','Serie A','Bundesliga','Ligue 1','Eredivisie','WK','ATP','WTA','NBA','NFL'];
 const QUICK_BETS=['Over 2.5','Under 2.5','Home Win','Away Win','Draw','BTTS Yes','BTTS No','DC 1X','DC X2','HT/FT','Handicap -1','Corners Over','Exact Score','Anytime Scorer','1st Half Over','Both Teams Score'];
@@ -742,9 +749,18 @@ function legFormHTML(pfx,data){
       <div style="display:flex;flex-wrap:wrap;gap:3px">${SPORTS.slice(0,6).map(sp=>`<button class="btn btn-xs ${data.sport===sp?'btn-primary':'btn-ghost'}" style="font-size:9px;padding:2px 6px" id="${pfx}-sp-${sp}" onclick="pickSport('${pfx}','${sp}')">${sp}</button>`).join('')}<select class="select" id="${pfx}-spsel" onchange="if('${pfx}'==='bf')bf.sport=this.value" style="width:auto;padding:2px 6px;font-size:9px;border-radius:7px">${SPORTS.slice(6).map(sp=>`<option ${data.sport===sp?'selected':''}>${sp}</option>`).join('')}</select></div>
     </div>
   </div>
-  <div class="input-group" style="margin-top:10px;position:relative"><label class="input-label">Match</label>
-    <input class="input" id="${pfx}-match" placeholder="${teams.length?'Start typing team name...':'e.g. Liverpool vs Man City'}" value="${esc(data.match||'')}" oninput="if('${pfx}'==='bf')bf.match=this.value;showTeams('${pfx}')" onfocus="showTeams('${pfx}')" autocomplete="off">
-    <div id="${pfx}-dd" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:99;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);max-height:160px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.4)"></div>
+  <div class="input-group" style="margin-top:10px"><label class="input-label">Match</label>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div style="flex:1;position:relative">
+        <input class="input" id="${pfx}-home" placeholder="${teams.length?'Home team':'Home'}" value="${esc(data._home||'')}" oninput="buildMatch('${pfx}');showTeamDD('${pfx}','home')" onfocus="showTeamDD('${pfx}','home')" autocomplete="off">
+        <div id="${pfx}-dd-home" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:99;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);max-height:160px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.4)"></div>
+      </div>
+      <span style="color:var(--text3);font-size:12px;font-weight:700;flex-shrink:0">vs</span>
+      <div style="flex:1;position:relative">
+        <input class="input" id="${pfx}-away" placeholder="${teams.length?'Away team':'Away'}" value="${esc(data._away||'')}" oninput="buildMatch('${pfx}');showTeamDD('${pfx}','away')" onfocus="showTeamDD('${pfx}','away')" autocomplete="off">
+        <div id="${pfx}-dd-away" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:99;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);max-height:160px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.4)"></div>
+      </div>
+    </div>
   </div>
   <div class="input-group" style="margin-top:10px"><label class="input-label">Bet / Selection</label>
     <input class="input" id="${pfx}-bet" placeholder="Over 2.5, BTTS, Home Win..." value="${esc(data.bet||'')}" oninput="if('${pfx}'==='bf')bf.bet=this.value">
@@ -767,20 +783,28 @@ function compChanged(pfx){
   if(map[comp])pickSport(pfx,map[comp]);
 }
 
-function showTeams(pfx){
+function showTeamDD(pfx,side){
   const comp=document.getElementById(pfx+'-comp')?.value||'';
   const teams=LEAGUE_TEAMS[comp]||[];
-  const dd=document.getElementById(pfx+'-dd');
-  const inp=document.getElementById(pfx+'-match');
+  const dd=document.getElementById(pfx+'-dd-'+side);
+  const inp=document.getElementById(pfx+'-'+side);
   if(!dd||!inp||!teams.length){if(dd)dd.style.display='none';return}
   const v=inp.value.toLowerCase();
-  const filtered=v?teams.filter(t=>t.toLowerCase().includes(v)):teams;
+  const other=side==='home'?document.getElementById(pfx+'-away')?.value:'';
+  const otherH=side==='away'?document.getElementById(pfx+'-home')?.value:'';
+  const exclude=(other||otherH||'').toLowerCase();
+  const filtered=(v?teams.filter(t=>t.toLowerCase().includes(v)):teams).filter(t=>t.toLowerCase()!==exclude);
   if(!filtered.length){dd.style.display='none';return}
-  dd.innerHTML=filtered.map(t=>`<div style="padding:7px 12px;cursor:pointer;font-size:12px;color:var(--text);transition:background 0.1s" onmouseenter="this.style.background='rgba(0,230,138,0.06)'" onmouseleave="this.style.background=''" onmousedown="event.preventDefault();document.getElementById('${pfx}-match').value='${t}';if('${pfx}'==='bf')bf.match='${t}';document.getElementById('${pfx}-dd').style.display='none'">${t}</div>`).join('');
+  dd.innerHTML=filtered.map(t=>`<div style="padding:7px 12px;cursor:pointer;font-size:12px;color:var(--text);transition:background 0.1s" onmouseenter="this.style.background='rgba(0,230,138,0.06)'" onmouseleave="this.style.background=''" onmousedown="event.preventDefault();document.getElementById('${pfx}-${side}').value='${t}';buildMatch('${pfx}');this.parentElement.style.display='none'">${t}</div>`).join('');
   dd.style.display='block';
 }
-// Hide dropdown on blur
-document.addEventListener('click',e=>{document.querySelectorAll('[id$=-dd]').forEach(dd=>{if(!dd.contains(e.target)&&!e.target.id?.endsWith('-match'))dd.style.display='none'})});
+function buildMatch(pfx){
+  const h=document.getElementById(pfx+'-home')?.value||'';
+  const a=document.getElementById(pfx+'-away')?.value||'';
+  const match=(h&&a)?h+' vs '+a:(h||a);
+  if(pfx==='bf'){bf.match=match;bf._home=h;bf._away=a}
+}
+document.addEventListener('click',e=>{document.querySelectorAll('[id$=-dd-home],[id$=-dd-away]').forEach(dd=>{if(!dd.contains(e.target))dd.style.display='none'})});
 
 function renderNieuweBet(){
   const isC=bf.betType==='Combi'||bf.betType==='System'||bf.betType==='Bet Builder';
@@ -820,7 +844,7 @@ function renderNieuweBet(){
 }
 
 function addCombiLeg(){
-  const m=document.getElementById('cl-match')?.value||'';
+  const h=document.getElementById('cl-home')?.value||'',a=document.getElementById('cl-away')?.value||'';const m=(h&&a)?h+' vs '+a:(h||a);
   const b=document.getElementById('cl-bet')?.value||'';
   const o=parseFloat(document.getElementById('cl-odds')?.value);
   const comp=document.getElementById('cl-comp')?.value||'';
@@ -850,7 +874,7 @@ function submitBet(){
     const newBet={id:uid(),match:bf.match,bet:bf.bet,odds,stake,sport:bf.sport,competition:bf.competition,date:bf.date,notes:bf.notes,betType:bf.betType,bookmaker:bf.bookmaker,tier:getTier(odds),unitPct:TIERS[getTier(odds)].pct,status:'pending',returns:0,createdAt:new Date().toISOString()};
     S.bets.push(newBet);saveState();saveBet(newBet);toast('Bet: '+bf.match);
   }
-  bf={match:'',bet:'',odds:'',sport:'Football',unitPct:S.settings.defaultUnit,customStake:'',useCustom:false,competition:'',date:new Date().toISOString().slice(0,10),notes:'',betType:bf.betType,bookmaker:bf.bookmaker};renderNieuweBet()
+  bf={match:'',bet:'',odds:'',sport:'Football',unitPct:S.settings.defaultUnit,customStake:'',useCustom:false,competition:'',date:new Date().toISOString().slice(0,10),notes:'',betType:bf.betType,bookmaker:bf.bookmaker,_home:'',_away:''};renderNieuweBet()
 }
 // ================================================================
 // SLIP SCANNER (AI-ready)
